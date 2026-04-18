@@ -8,16 +8,8 @@
 <style>
 *{box-sizing:border-box;margin:0;padding:0;}
 body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f5f5f3;color:#1a1a1a;font-size:15px;}
-:root{
-  --bg:#fff;--bg2:#f0efe8;--bg-info:#e6f1fb;--bg-success:#eaf3de;
-  --tx:#1a1a1a;--tx2:#6b6b67;--tx-info:#185FA5;--tx-success:#3B6D11;
-  --bd:rgba(0,0,0,0.12);--bd2:rgba(0,0,0,0.22);--r:8px;--rl:12px;
-}
-@media(prefers-color-scheme:dark){
-  :root{--bg:#1e1e1c;--bg2:#2a2a28;--bg-info:#0c2e4a;--bg-success:#173404;
-  --tx:#f0efe8;--tx2:#9a9a94;--tx-info:#85B7EB;--tx-success:#97C459;
-  --bd:rgba(255,255,255,0.1);--bd2:rgba(255,255,255,0.2);}body{background:#141413;}
-}
+:root{--bg:#fff;--bg2:#f0efe8;--bg-info:#e6f1fb;--bg-success:#eaf3de;--tx:#1a1a1a;--tx2:#6b6b67;--tx-info:#185FA5;--tx-success:#3B6D11;--bd:rgba(0,0,0,0.12);--bd2:rgba(0,0,0,0.22);--r:8px;--rl:12px;}
+@media(prefers-color-scheme:dark){:root{--bg:#1e1e1c;--bg2:#2a2a28;--bg-info:#0c2e4a;--bg-success:#173404;--tx:#f0efe8;--tx2:#9a9a94;--tx-info:#85B7EB;--tx-success:#97C459;--bd:rgba(255,255,255,0.1);--bd2:rgba(255,255,255,0.2);}body{background:#141413;}}
 .page{max-width:640px;margin:0 auto;padding:32px 20px 60px;}
 .header{margin-bottom:28px;}
 .logo{font-size:18px;font-weight:500;letter-spacing:-.3px;color:var(--tx);margin-bottom:4px;}.logo span{color:#185FA5;}
@@ -36,7 +28,7 @@ textarea{resize:vertical;line-height:1.5;}
 .toggle-btn::before{content:'';display:inline-block;width:9px;height:9px;border-radius:50%;border:1.5px solid var(--bd2);transition:all .18s;flex-shrink:0;}
 .toggle-btn.on{background:#185FA5;color:white;border-color:#185FA5;}
 .toggle-btn.on::before{background:white;border-color:white;}
-.range-wrap{margin-bottom:14px;}
+.range-wrap{margin-bottom:16px;}
 .range-label{font-size:12px;color:var(--tx2);margin-bottom:6px;display:flex;justify-content:space-between;}
 .range-label span{font-weight:500;color:var(--tx);}
 input[type=range]{padding:0;border:none;background:transparent;cursor:pointer;}
@@ -48,7 +40,6 @@ input[type=range]{padding:0;border:none;background:transparent;cursor:pointer;}
 .map-hint{font-size:12px;color:var(--tx2);padding:8px 10px;background:var(--bg2);border-radius:var(--r);margin-bottom:10px;line-height:1.5;}
 .map-controls{display:flex;gap:8px;margin-bottom:8px;}
 .map-ctrl-btn{padding:7px 14px;font-size:12px;border:0.5px solid var(--bd2);border-radius:var(--r);background:transparent;cursor:pointer;color:var(--tx);transition:all .15s;}
-.map-ctrl-btn:hover{background:var(--bg2);}
 .map-ctrl-btn.active-draw{background:#185FA5;color:white;border-color:#185FA5;}
 #area-status{font-size:12px;color:var(--tx-success);padding:4px 0;display:none;}
 .submit-btn{width:100%;padding:14px;background:#185FA5;color:white;border:none;border-radius:var(--r);cursor:pointer;font-size:15px;font-weight:500;transition:background .15s;margin-top:8px;}
@@ -158,12 +149,23 @@ input[type=range]{padding:0;border:none;background:transparent;cursor:pointer;}
 
 <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
 <script>
+// ── SUPABASE CONFIG ───────────────────────────────────────
+const SB_URL='https://xbtomcvnnvghewhaynhf.supabase.co';
+const SB_KEY='sb_publishable_o3a727UHcQu7XOl0MGNvDQ_4vI_Di1_';
+const HEADERS={'Content-Type':'application/json','apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY};
+
+async function sbInsert(table,data){
+  const res=await fetch(SB_URL+'/rest/v1/'+table,{method:'POST',headers:{...HEADERS,'Prefer':'return=representation'},body:JSON.stringify(data)});
+  if(!res.ok){const err=await res.text();throw new Error(err);}
+  return res.json();
+}
+
+// ── MAP ───────────────────────────────────────────────────
 const VERONA_CENTER=[45.4384,10.9916];
 let leafletMap=null,drawnPoints=[],drawnPolyline=null,drawnPolygon=null,isDrawing=false;
 let areaCenter=null,locMode='text';
 
 function toggleFeat(btn){btn.classList.toggle('on');}
-
 function setLocMode(mode,btn){
   locMode=mode;
   document.querySelectorAll('.map-tab').forEach(t=>t.classList.remove('active'));
@@ -172,7 +174,6 @@ function setLocMode(mode,btn){
   document.getElementById('loc-map').style.display=mode==='map'?'block':'none';
   if(mode==='map') setTimeout(initMap,120);
 }
-
 function initMap(){
   if(leafletMap) return;
   leafletMap=L.map('map').setView(VERONA_CENTER,13);
@@ -181,7 +182,6 @@ function initMap(){
   leafletMap.on('dblclick',e=>{e.originalEvent.preventDefault();finishDraw();});
   setTimeout(()=>leafletMap.invalidateSize(),200);
 }
-
 function startDraw(){
   if(!leafletMap) return;
   isDrawing=true;drawnPoints=[];
@@ -189,10 +189,8 @@ function startDraw(){
   if(drawnPolygon){leafletMap.removeLayer(drawnPolygon);drawnPolygon=null;}
   document.getElementById('draw-btn').classList.add('active-draw');
   document.getElementById('area-status').style.display='none';
-  areaCenter=null;
-  leafletMap.getContainer().style.cursor='crosshair';
+  areaCenter=null;leafletMap.getContainer().style.cursor='crosshair';
 }
-
 function clearDraw(){
   isDrawing=false;drawnPoints=[];
   if(drawnPolyline){leafletMap.removeLayer(drawnPolyline);drawnPolyline=null;}
@@ -202,27 +200,26 @@ function clearDraw(){
   document.getElementById('area-status').style.display='none';
   if(leafletMap) leafletMap.getContainer().style.cursor='';
 }
-
 function onMapClick(e){
   if(!isDrawing) return;
   drawnPoints.push([e.latlng.lat,e.latlng.lng]);
   if(drawnPolyline) leafletMap.removeLayer(drawnPolyline);
   drawnPolyline=L.polyline(drawnPoints,{color:'#185FA5',weight:2,dashArray:'5,5'}).addTo(leafletMap);
 }
-
 function finishDraw(){
   if(!isDrawing||drawnPoints.length<3) return;
   isDrawing=false;
   if(drawnPolyline){leafletMap.removeLayer(drawnPolyline);drawnPolyline=null;}
   drawnPolygon=L.polygon(drawnPoints,{color:'#185FA5',weight:2,fillColor:'#185FA5',fillOpacity:0.15}).addTo(leafletMap);
   const c=drawnPolygon.getBounds().getCenter();
-  areaCenter=[c.lat,c.lng];
+  areaCenter={lat:c.lat,lng:c.lng};
   document.getElementById('draw-btn').classList.remove('active-draw');
   document.getElementById('area-status').style.display='block';
   leafletMap.getContainer().style.cursor='';
 }
 
-function submitForm(){
+// ── SUBMIT → SUPABASE ────────────────────────────────────
+async function submitForm(){
   const nome=document.getElementById('c-nome').value.trim();
   const cognome=document.getElementById('c-cognome').value.trim();
   const email=document.getElementById('c-email').value.trim();
@@ -231,17 +228,19 @@ function submitForm(){
   errEl.style.display='none';
   if(locMode==='map'&&!areaCenter){alert('Per favore disegna un\'area sulla mappa, oppure passa alla scheda "Scrivi via o quartiere".');return;}
 
+  const btn=document.getElementById('submit-btn');
+  btn.disabled=true;btn.textContent='Invio in corso...';
+
   const feats={};
   document.querySelectorAll('#c-features .toggle-btn').forEach(b=>{feats[b.dataset.key]=b.classList.contains('on');});
 
   const req={
     id:'req_'+Date.now()+'_'+Math.random().toString(36).slice(2,7),
     name:nome+' '+cognome,
-    email,
-    tel:document.getElementById('c-tel').value.trim(),
+    email,tel:document.getElementById('c-tel').value.trim(),
     tipo:document.getElementById('c-tipo').value,
     via:locMode==='text'?document.getElementById('c-via').value.trim():'area su mappa',
-    areaCenter:areaCenter,
+    area_center:areaCenter,
     raggio:parseFloat(document.getElementById('c-raggio').value)||2,
     budget:parseInt(document.getElementById('c-budget').value),
     mq:parseInt(document.getElementById('c-mq').value),
@@ -249,17 +248,17 @@ function submitForm(){
     features:feats,
     note:document.getElementById('c-note').value.trim(),
     date:new Date().toLocaleDateString('it-IT',{day:'numeric',month:'short',year:'numeric'}),
-    isNew:true,
-    archived:false
+    is_new:true,archived:false
   };
 
-  // Salva in localStorage — stesso dominio GitHub Pages, leggibile da index.html
-  const existing=JSON.parse(localStorage.getItem('cm_requests')||'[]');
-  existing.unshift(req);
-  localStorage.setItem('cm_requests',JSON.stringify(existing));
-
-  document.getElementById('main-form').style.display='none';
-  document.getElementById('success-screen').style.display='block';
+  try{
+    await sbInsert('requests',req);
+    document.getElementById('main-form').style.display='none';
+    document.getElementById('success-screen').style.display='block';
+  }catch(e){
+    btn.disabled=false;btn.textContent='Invia richiesta a Stefania Cecchetti →';
+    alert('Si è verificato un errore durante l\'invio. Riprova tra qualche secondo.\n\n'+e.message);
+  }
 }
 </script>
 </body>
