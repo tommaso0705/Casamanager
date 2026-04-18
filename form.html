@@ -16,46 +16,49 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;backgrou
 @media(prefers-color-scheme:dark){
   :root{--bg:#1e1e1c;--bg2:#2a2a28;--bg-info:#0c2e4a;--bg-success:#173404;
   --tx:#f0efe8;--tx2:#9a9a94;--tx-info:#85B7EB;--tx-success:#97C459;
-  --bd:rgba(255,255,255,0.1);--bd2:rgba(255,255,255,0.2);}
-  body{background:#141413;}
+  --bd:rgba(255,255,255,0.1);--bd2:rgba(255,255,255,0.2);}body{background:#141413;}
 }
 .page{max-width:640px;margin:0 auto;padding:32px 20px 60px;}
-.header{margin-bottom:32px;}
+.header{margin-bottom:28px;}
 .logo{font-size:18px;font-weight:500;letter-spacing:-.3px;color:var(--tx);margin-bottom:4px;}.logo span{color:#185FA5;}
 .header-sub{font-size:13px;color:var(--tx2);}
-.card{background:var(--bg);border:0.5px solid var(--bd);border-radius:var(--rl);padding:24px;margin-bottom:16px;}
+.card{background:var(--bg);border:0.5px solid var(--bd);border-radius:var(--rl);padding:24px;margin-bottom:14px;}
 .fsect{font-size:11px;font-weight:500;color:var(--tx2);text-transform:uppercase;letter-spacing:.6px;margin:0 0 14px;}
 .form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:14px;}
-.form-row.full{grid-template-columns:1fr;}
-.form-group{display:flex;flex-direction:column;gap:5px;}
+.form-group{display:flex;flex-direction:column;gap:5px;margin-bottom:14px;}
+.form-group:last-child{margin-bottom:0;}
 .form-label{font-size:12px;color:var(--tx2);}
 input,select,textarea{font-family:inherit;font-size:14px;padding:10px 12px;border:0.5px solid var(--bd2);border-radius:var(--r);background:var(--bg);color:var(--tx);width:100%;transition:border-color .15s;}
 input:focus,select:focus,textarea:focus{outline:none;border-color:#185FA5;}
 textarea{resize:vertical;line-height:1.5;}
-.toggle-row{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:4px;}
+.toggle-row{display:flex;flex-wrap:wrap;gap:8px;}
 .toggle-btn{padding:8px 16px;border-radius:20px;border:1.5px solid var(--bd2);background:var(--bg);cursor:pointer;font-size:13px;font-weight:500;color:var(--tx2);transition:all .18s;display:flex;align-items:center;gap:6px;}
 .toggle-btn::before{content:'';display:inline-block;width:9px;height:9px;border-radius:50%;border:1.5px solid var(--bd2);transition:all .18s;flex-shrink:0;}
 .toggle-btn.on{background:#185FA5;color:white;border-color:#185FA5;}
 .toggle-btn.on::before{background:white;border-color:white;}
-.range-row{display:flex;align-items:center;gap:12px;}
-.range-row input[type=range]{flex:1;}
-.range-val{font-size:14px;font-weight:500;min-width:80px;color:var(--tx);}
+.range-wrap{margin-bottom:14px;}
+.range-label{font-size:12px;color:var(--tx2);margin-bottom:6px;display:flex;justify-content:space-between;}
+.range-label span{font-weight:500;color:var(--tx);}
+input[type=range]{padding:0;border:none;background:transparent;cursor:pointer;}
 .map-tabs{display:flex;margin-bottom:12px;border:0.5px solid var(--bd2);border-radius:var(--r);overflow:hidden;}
 .map-tab{flex:1;padding:9px;font-size:13px;font-weight:500;cursor:pointer;border:none;background:transparent;color:var(--tx2);transition:all .15s;}
 .map-tab.active{background:#185FA5;color:white;}
 #map-container{border-radius:var(--r);overflow:hidden;border:0.5px solid var(--bd);height:300px;margin-bottom:8px;}
 #map{height:100%;width:100%;}
-.map-instructions{font-size:12px;color:var(--tx2);padding:8px 10px;background:var(--bg2);border-radius:var(--r);margin-bottom:10px;}
+.map-hint{font-size:12px;color:var(--tx2);padding:8px 10px;background:var(--bg2);border-radius:var(--r);margin-bottom:10px;line-height:1.5;}
 .map-controls{display:flex;gap:8px;margin-bottom:8px;}
-.map-ctrl-btn{padding:7px 14px;font-size:12px;border:0.5px solid var(--bd2);border-radius:var(--r);background:transparent;cursor:pointer;color:var(--tx);}
+.map-ctrl-btn{padding:7px 14px;font-size:12px;border:0.5px solid var(--bd2);border-radius:var(--r);background:transparent;cursor:pointer;color:var(--tx);transition:all .15s;}
+.map-ctrl-btn:hover{background:var(--bg2);}
 .map-ctrl-btn.active-draw{background:#185FA5;color:white;border-color:#185FA5;}
-#area-status{font-size:12px;color:var(--tx-success);padding:6px 0;display:none;}
+#area-status{font-size:12px;color:var(--tx-success);padding:4px 0;display:none;}
 .submit-btn{width:100%;padding:14px;background:#185FA5;color:white;border:none;border-radius:var(--r);cursor:pointer;font-size:15px;font-weight:500;transition:background .15s;margin-top:8px;}
 .submit-btn:hover{background:#0C447C;}
-.success-screen{display:none;text-align:center;padding:48px 24px;}
-.success-icon{font-size:48px;margin-bottom:16px;}
-.success-title{font-size:20px;font-weight:500;margin-bottom:8px;color:var(--tx);}
-.success-sub{font-size:14px;color:var(--tx2);}
+.submit-btn:disabled{opacity:.5;cursor:not-allowed;}
+.err{font-size:12px;color:#A32D2D;margin-top:6px;display:none;}
+.success-screen{display:none;text-align:center;padding:60px 24px;}
+.success-icon{font-size:52px;margin-bottom:16px;}
+.success-title{font-size:22px;font-weight:500;margin-bottom:8px;color:var(--tx);}
+.success-sub{font-size:14px;color:var(--tx2);line-height:1.6;}
 @media(max-width:500px){.form-row{grid-template-columns:1fr;}}
 </style>
 </head>
@@ -63,35 +66,34 @@ textarea{resize:vertical;line-height:1.5;}
 <div class="page">
   <div class="header">
     <div class="logo"><span>Casa</span>Manager</div>
-    <div class="header-sub">Compilare il form per inviare la richiesta a Stefania Cecchetti</div>
+    <div class="header-sub">Compila il modulo per inviare la tua richiesta a Stefania Cecchetti</div>
   </div>
 
   <div id="main-form">
-    <!-- DATI PERSONALI -->
     <div class="card">
       <div class="fsect">Dati personali</div>
       <div class="form-row">
-        <div class="form-group"><label class="form-label">Nome *</label><input type="text" id="c-nome" placeholder="Mario" required></div>
-        <div class="form-group"><label class="form-label">Cognome *</label><input type="text" id="c-cognome" placeholder="Rossi" required></div>
+        <div class="form-group"><label class="form-label">Nome *</label><input type="text" id="c-nome" placeholder="Mario"></div>
+        <div class="form-group"><label class="form-label">Cognome *</label><input type="text" id="c-cognome" placeholder="Rossi"></div>
       </div>
       <div class="form-row">
-        <div class="form-group"><label class="form-label">Email *</label><input type="email" id="c-email" placeholder="mario@email.com" required></div>
+        <div class="form-group"><label class="form-label">Email *</label><input type="email" id="c-email" placeholder="mario@email.com"></div>
         <div class="form-group"><label class="form-label">Telefono</label><input type="tel" id="c-tel" placeholder="+39 333 123456"></div>
       </div>
+      <div id="err-personal" class="err">Per favore inserisci nome, cognome ed email.</div>
     </div>
 
-    <!-- AREA -->
     <div class="card">
       <div class="fsect">Dove vuoi abitare a Verona?</div>
       <div class="map-tabs">
-        <button class="map-tab active" onclick="setLocationMode('text',this)">Inserisci via o quartiere</button>
-        <button class="map-tab" onclick="setLocationMode('map',this)">Disegna area sulla mappa</button>
+        <button class="map-tab active" onclick="setLocMode('text',this)">Scrivi via o quartiere</button>
+        <button class="map-tab" onclick="setLocMode('map',this)">Disegna area sulla mappa</button>
       </div>
-      <div id="loc-text-mode">
+      <div id="loc-text">
         <div class="form-group"><label class="form-label">Via, quartiere o zona</label><input type="text" id="c-via" placeholder="es. Centro Storico, Veronetta, Via Mazzini..."></div>
       </div>
-      <div id="loc-map-mode" style="display:none;">
-        <div class="map-instructions">Clicca "Disegna area", poi clicca sulla mappa per tracciare i punti della zona. Doppio click per completare.</div>
+      <div id="loc-map" style="display:none;">
+        <div class="map-hint">Clicca "Disegna area", poi clicca sulla mappa per tracciare i punti. Doppio click per chiudere il perimetro.</div>
         <div id="map-container"><div id="map"></div></div>
         <div class="map-controls">
           <button class="map-ctrl-btn" id="draw-btn" onclick="startDraw()">Disegna area</button>
@@ -101,35 +103,33 @@ textarea{resize:vertical;line-height:1.5;}
       </div>
     </div>
 
-    <!-- PREFERENZE -->
     <div class="card">
       <div class="fsect">Preferenze immobile</div>
       <div class="form-row">
-        <div class="form-group"><label class="form-label">Tipologia</label>
+        <div class="form-group"><label class="form-label">Tipologia preferita</label>
           <select id="c-tipo"><option value="">Qualsiasi</option><option>Appartamento</option><option>Villa</option><option>Casa indipendente</option><option>Attico</option></select>
         </div>
-        <div class="form-group"><label class="form-label">Raggio massimo dall'area</label>
+        <div class="form-group"><label class="form-label">Distanza massima dall'area</label>
           <select id="c-raggio"><option value="0.5">500 m</option><option value="1">1 km</option><option value="2" selected>2 km</option><option value="5">5 km</option><option value="10">10 km</option></select>
         </div>
       </div>
-      <div class="form-group" style="margin-bottom:16px;">
-        <label class="form-label">Budget massimo: <span id="budget-val" style="font-weight:500;color:var(--tx);">€ 400.000</span></label>
-        <div class="range-row" style="margin-top:6px;"><input type="range" min="50000" max="1500000" step="10000" value="400000" id="c-budget" oninput="document.getElementById('budget-val').textContent='€ '+parseInt(this.value).toLocaleString('it-IT')"></div>
+      <div class="range-wrap">
+        <div class="range-label">Budget massimo <span id="lbl-budget">€ 400.000</span></div>
+        <input type="range" min="50000" max="1500000" step="10000" value="400000" id="c-budget" oninput="document.getElementById('lbl-budget').textContent='€ '+parseInt(this.value).toLocaleString('it-IT')">
       </div>
-      <div class="form-group" style="margin-bottom:16px;">
-        <label class="form-label">Superficie minima: <span id="mq-val" style="font-weight:500;color:var(--tx);">80 mq</span></label>
-        <div class="range-row" style="margin-top:6px;"><input type="range" min="30" max="400" step="5" value="80" id="c-mq" oninput="document.getElementById('mq-val').textContent=this.value+' mq'"></div>
+      <div class="range-wrap">
+        <div class="range-label">Superficie minima <span id="lbl-mq">80 mq</span></div>
+        <input type="range" min="30" max="400" step="5" value="80" id="c-mq" oninput="document.getElementById('lbl-mq').textContent=this.value+' mq'">
       </div>
-      <div class="form-group">
-        <label class="form-label">Locali minimi: <span id="locali-val" style="font-weight:500;color:var(--tx);">3</span></label>
-        <div class="range-row" style="margin-top:6px;"><input type="range" min="1" max="10" step="1" value="3" id="c-locali" oninput="document.getElementById('locali-val').textContent=this.value"></div>
+      <div class="range-wrap">
+        <div class="range-label">Locali minimi <span id="lbl-locali">3</span></div>
+        <input type="range" min="1" max="10" step="1" value="3" id="c-locali" oninput="document.getElementById('lbl-locali').textContent=this.value">
       </div>
     </div>
 
-    <!-- CARATTERISTICHE -->
     <div class="card">
       <div class="fsect">Caratteristiche desiderate</div>
-      <p style="font-size:13px;color:var(--tx2);margin-bottom:12px;">Seleziona le caratteristiche importanti per te</p>
+      <p style="font-size:13px;color:var(--tx2);margin-bottom:12px;">Clicca per selezionare le caratteristiche che ti interessano</p>
       <div class="toggle-row" id="c-features">
         <button class="toggle-btn" onclick="toggleFeat(this)" data-key="giardino">Giardino</button>
         <button class="toggle-btn" onclick="toggleFeat(this)" data-key="garage">Garage</button>
@@ -140,16 +140,15 @@ textarea{resize:vertical;line-height:1.5;}
         <button class="toggle-btn" onclick="toggleFeat(this)" data-key="piscina">Piscina</button>
         <button class="toggle-btn" onclick="toggleFeat(this)" data-key="portineria">Portineria</button>
       </div>
-      <div class="form-group" style="margin-top:12px;">
+      <div class="form-group" style="margin-top:16px;">
         <label class="form-label">Note aggiuntive</label>
         <textarea id="c-note" rows="3" placeholder="Es: piano alto, vicino alle scuole, lontano da strade trafficate..."></textarea>
       </div>
     </div>
 
-    <button class="submit-btn" onclick="submitForm()">Invia richiesta a Stefania Cecchetti →</button>
+    <button class="submit-btn" id="submit-btn" onclick="submitForm()">Invia richiesta a Stefania Cecchetti →</button>
   </div>
 
-  <!-- SUCCESS -->
   <div class="success-screen" id="success-screen">
     <div class="success-icon">✅</div>
     <div class="success-title">Richiesta inviata!</div>
@@ -161,17 +160,17 @@ textarea{resize:vertical;line-height:1.5;}
 <script>
 const VERONA_CENTER=[45.4384,10.9916];
 let leafletMap=null,drawnPoints=[],drawnPolyline=null,drawnPolygon=null,isDrawing=false;
-let clientAreaCenter=null,locationMode='text';
+let areaCenter=null,locMode='text';
 
 function toggleFeat(btn){btn.classList.toggle('on');}
 
-function setLocationMode(mode,btn){
-  locationMode=mode;
+function setLocMode(mode,btn){
+  locMode=mode;
   document.querySelectorAll('.map-tab').forEach(t=>t.classList.remove('active'));
   btn.classList.add('active');
-  document.getElementById('loc-text-mode').style.display=mode==='text'?'block':'none';
-  document.getElementById('loc-map-mode').style.display=mode==='map'?'block':'none';
-  if(mode==='map') setTimeout(initMap,100);
+  document.getElementById('loc-text').style.display=mode==='text'?'block':'none';
+  document.getElementById('loc-map').style.display=mode==='map'?'block':'none';
+  if(mode==='map') setTimeout(initMap,120);
 }
 
 function initMap(){
@@ -190,6 +189,7 @@ function startDraw(){
   if(drawnPolygon){leafletMap.removeLayer(drawnPolygon);drawnPolygon=null;}
   document.getElementById('draw-btn').classList.add('active-draw');
   document.getElementById('area-status').style.display='none';
+  areaCenter=null;
   leafletMap.getContainer().style.cursor='crosshair';
 }
 
@@ -197,7 +197,7 @@ function clearDraw(){
   isDrawing=false;drawnPoints=[];
   if(drawnPolyline){leafletMap.removeLayer(drawnPolyline);drawnPolyline=null;}
   if(drawnPolygon){leafletMap.removeLayer(drawnPolygon);drawnPolygon=null;}
-  clientAreaCenter=null;
+  areaCenter=null;
   document.getElementById('draw-btn').classList.remove('active-draw');
   document.getElementById('area-status').style.display='none';
   if(leafletMap) leafletMap.getContainer().style.cursor='';
@@ -215,8 +215,8 @@ function finishDraw(){
   isDrawing=false;
   if(drawnPolyline){leafletMap.removeLayer(drawnPolyline);drawnPolyline=null;}
   drawnPolygon=L.polygon(drawnPoints,{color:'#185FA5',weight:2,fillColor:'#185FA5',fillOpacity:0.15}).addTo(leafletMap);
-  const bounds=drawnPolygon.getBounds(),center=bounds.getCenter();
-  clientAreaCenter=[center.lat,center.lng];
+  const c=drawnPolygon.getBounds().getCenter();
+  areaCenter=[c.lat,c.lng];
   document.getElementById('draw-btn').classList.remove('active-draw');
   document.getElementById('area-status').style.display='block';
   leafletMap.getContainer().style.cursor='';
@@ -224,10 +224,40 @@ function finishDraw(){
 
 function submitForm(){
   const nome=document.getElementById('c-nome').value.trim();
+  const cognome=document.getElementById('c-cognome').value.trim();
   const email=document.getElementById('c-email').value.trim();
-  if(!nome||!email){alert('Per favore inserisci almeno nome ed email.');return;}
-  if(locationMode==='map'&&!clientAreaCenter){alert('Per favore disegna un\'area sulla mappa o usa il campo testo.');return;}
-  // In a real deployment: send data to a backend or email service here
+  const errEl=document.getElementById('err-personal');
+  if(!nome||!cognome||!email){errEl.style.display='block';return;}
+  errEl.style.display='none';
+  if(locMode==='map'&&!areaCenter){alert('Per favore disegna un\'area sulla mappa, oppure passa alla scheda "Scrivi via o quartiere".');return;}
+
+  const feats={};
+  document.querySelectorAll('#c-features .toggle-btn').forEach(b=>{feats[b.dataset.key]=b.classList.contains('on');});
+
+  const req={
+    id:'req_'+Date.now()+'_'+Math.random().toString(36).slice(2,7),
+    name:nome+' '+cognome,
+    email,
+    tel:document.getElementById('c-tel').value.trim(),
+    tipo:document.getElementById('c-tipo').value,
+    via:locMode==='text'?document.getElementById('c-via').value.trim():'area su mappa',
+    areaCenter:areaCenter,
+    raggio:parseFloat(document.getElementById('c-raggio').value)||2,
+    budget:parseInt(document.getElementById('c-budget').value),
+    mq:parseInt(document.getElementById('c-mq').value),
+    locali:parseInt(document.getElementById('c-locali').value),
+    features:feats,
+    note:document.getElementById('c-note').value.trim(),
+    date:new Date().toLocaleDateString('it-IT',{day:'numeric',month:'short',year:'numeric'}),
+    isNew:true,
+    archived:false
+  };
+
+  // Salva in localStorage — stesso dominio GitHub Pages, leggibile da index.html
+  const existing=JSON.parse(localStorage.getItem('cm_requests')||'[]');
+  existing.unshift(req);
+  localStorage.setItem('cm_requests',JSON.stringify(existing));
+
   document.getElementById('main-form').style.display='none';
   document.getElementById('success-screen').style.display='block';
 }
