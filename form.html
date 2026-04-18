@@ -84,10 +84,11 @@ input[type=range]{padding:0;border:none;background:transparent;cursor:pointer;}
         <div class="form-group"><label class="form-label">Via, quartiere o zona</label><input type="text" id="c-via" placeholder="es. Centro Storico, Veronetta, Via Mazzini..."></div>
       </div>
       <div id="loc-map" style="display:none;">
-        <div class="map-hint">Clicca "Disegna area", poi clicca sulla mappa per tracciare i punti. Doppio click per chiudere il perimetro.</div>
+        <div class="map-hint">Tocca "Disegna area", poi tocca la mappa per aggiungere i punti del perimetro. Quando hai finito tocca "Chiudi area".</div>
         <div id="map-container"><div id="map"></div></div>
         <div class="map-controls">
           <button class="map-ctrl-btn" id="draw-btn" onclick="startDraw()">Disegna area</button>
+          <button class="map-ctrl-btn" id="close-btn" onclick="finishDraw()" style="display:none;background:#185FA5;color:white;border-color:#185FA5;">✓ Chiudi area</button>
           <button class="map-ctrl-btn" onclick="clearDraw()">Cancella</button>
         </div>
         <div id="area-status">✓ Area selezionata</div>
@@ -176,10 +177,10 @@ function setLocMode(mode,btn){
 }
 function initMap(){
   if(leafletMap) return;
-  leafletMap=L.map('map').setView(VERONA_CENTER,13);
+  leafletMap=L.map('map',{doubleClickZoom:false}).setView(VERONA_CENTER,13);
   L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© OpenStreetMap',maxZoom:19}).addTo(leafletMap);
   leafletMap.on('click',onMapClick);
-  leafletMap.on('dblclick',e=>{e.originalEvent.preventDefault();finishDraw();});
+
   setTimeout(()=>leafletMap.invalidateSize(),200);
 }
 function startDraw(){
@@ -188,6 +189,7 @@ function startDraw(){
   if(drawnPolyline){leafletMap.removeLayer(drawnPolyline);drawnPolyline=null;}
   if(drawnPolygon){leafletMap.removeLayer(drawnPolygon);drawnPolygon=null;}
   document.getElementById('draw-btn').classList.add('active-draw');
+  document.getElementById('close-btn').style.display='block';
   document.getElementById('area-status').style.display='none';
   areaCenter=null;leafletMap.getContainer().style.cursor='crosshair';
 }
@@ -197,6 +199,7 @@ function clearDraw(){
   if(drawnPolygon){leafletMap.removeLayer(drawnPolygon);drawnPolygon=null;}
   areaCenter=null;
   document.getElementById('draw-btn').classList.remove('active-draw');
+  document.getElementById('close-btn').style.display='none';
   document.getElementById('area-status').style.display='none';
   if(leafletMap) leafletMap.getContainer().style.cursor='';
 }
@@ -214,6 +217,7 @@ function finishDraw(){
   const c=drawnPolygon.getBounds().getCenter();
   areaCenter={lat:c.lat,lng:c.lng};
   document.getElementById('draw-btn').classList.remove('active-draw');
+  document.getElementById('close-btn').style.display='none';
   document.getElementById('area-status').style.display='block';
   leafletMap.getContainer().style.cursor='';
 }

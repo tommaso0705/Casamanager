@@ -167,7 +167,8 @@ textarea{resize:vertical;line-height:1.5;}
     <div class="form-row">
       <div class="form-group"><label class="form-label">Indirizzo a Verona</label><input type="text" id="m-address" placeholder="Via Mazzini 10, Verona"></div>
       <div class="form-group"><label class="form-label">Quartiere/Zona</label>
-        <select id="m-zona"><option>Centro Storico</option><option>Veronetta</option><option>Borgo Trento</option><option>Porta Palio</option><option>Golosine</option><option>San Zeno</option><option>Quinzano</option><option>Avesa</option><option>Parona</option><option>Pescantina</option></select>
+        <select id="m-zona" onchange="toggleAltroZona(this)"><option>Centro Storico</option><option>Veronetta</option><option>Borgo Trento</option><option>Porta Palio</option><option>Golosine</option><option>San Zeno</option><option>Quinzano</option><option>Avesa</option><option>Parona</option><option>Pescantina</option><option value="altro">Altro...</option></select>
+      <input type="text" id="m-zona-altro" placeholder="Scrivi la zona..." style="display:none;margin-top:6px;">
       </div>
     </div>
     <div class="form-row">
@@ -463,7 +464,7 @@ function openAddModal(){
   document.getElementById('modal-title').textContent='Aggiungi immobile';
   ['m-address','m-price','m-mq','m-locali'].forEach(id=>document.getElementById(id).value='');
   document.getElementById('m-lat').value='45.4384';document.getElementById('m-lng').value='10.9916';
-  document.getElementById('m-tipo').value='Appartamento';document.getElementById('m-zona').value='Centro Storico';
+  document.getElementById('m-tipo').value='Appartamento';document.getElementById('m-zona').value='Centro Storico';document.getElementById('m-zona-altro').style.display='none';document.getElementById('m-zona-altro').value='';
   document.querySelectorAll('#modal-feats .toggle-btn').forEach(b=>b.classList.remove('on'));
   document.getElementById('delete-btn').style.display='none';
   document.getElementById('modal').style.display='flex';
@@ -474,16 +475,35 @@ function openEditModal(id){
   document.getElementById('m-address').value=p.address;document.getElementById('m-price').value=p.price;
   document.getElementById('m-mq').value=p.mq;document.getElementById('m-locali').value=p.locali;
   document.getElementById('m-lat').value=p.lat;document.getElementById('m-lng').value=p.lng;
-  document.getElementById('m-tipo').value=p.tipo;document.getElementById('m-zona').value=p.zona;
+  document.getElementById('m-tipo').value=p.tipo;
+  const zonaOpts=['Centro Storico','Veronetta','Borgo Trento','Porta Palio','Golosine','San Zeno','Quinzano','Avesa','Parona','Pescantina'];
+  const zonaEl=document.getElementById('m-zona');
+  const zonaAltroEl=document.getElementById('m-zona-altro');
+  if(zonaOpts.includes(p.zona)){zonaEl.value=p.zona;zonaAltroEl.style.display='none';}
+  else{zonaEl.value='altro';zonaAltroEl.value=p.zona;zonaAltroEl.style.display='block';}
   document.querySelectorAll('#modal-feats .toggle-btn').forEach(b=>b.classList.toggle('on',!!p.features[b.dataset.key]));
   document.getElementById('delete-btn').style.display='';
   document.getElementById('modal').style.display='flex';
 }
 function closeModal(){document.getElementById('modal').style.display='none';}
+
+function toggleAltroZona(sel){
+  const inp=document.getElementById('m-zona-altro');
+  inp.style.display=sel.value==='altro'?'block':'none';
+  if(sel.value==='altro') inp.focus();
+}
+function getZonaValue(){
+  const sel=document.getElementById('m-zona');
+  if(sel.value==='altro'){
+    const v=document.getElementById('m-zona-altro').value.trim();
+    return v||'Altro';
+  }
+  return sel.value;
+}
 function saveProperty(){
   const features={};
   document.querySelectorAll('#modal-feats .toggle-btn').forEach(b=>{features[b.dataset.key]=b.classList.contains('on');});
-  const zona=document.getElementById('m-zona').value;
+  const zona=getZonaValue();
   const prop={id:editingId||nextPropId++,address:document.getElementById('m-address').value||'Indirizzo non specificato',zona,
     lat:parseFloat(document.getElementById('m-lat').value)||(ZONE_COORDS[zona]||VERONA_CENTER)[0],
     lng:parseFloat(document.getElementById('m-lng').value)||(ZONE_COORDS[zona]||VERONA_CENTER)[1],
