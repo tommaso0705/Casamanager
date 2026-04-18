@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>CasaManager — Pannello Agente</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f5f5f3;color:#1a1a1a;font-size:15px;}
+:root{
+  --bg:#fff;--bg2:#f0efe8;--bg-info:#e6f1fb;--bg-success:#eaf3de;--bg-danger:#fcebeb;--bg-warn:#faeeda;
+  --tx:#1a1a1a;--tx2:#6b6b67;--tx-info:#185FA5;--tx-success:#3B6D11;--tx-danger:#A32D2D;--tx-warn:#633806;
+  --bd:rgba(0,0,0,0.12);--bd2:rgba(0,0,0,0.22);--bd-danger:rgba(163,45,45,0.4);--r:8px;--rl:12px;
+}
+@media(prefers-color-scheme:dark){
+  :root{--bg:#1e1e1c;--bg2:#2a2a28;--bg-info:#0c2e4a;--bg-success:#173404;--bg-danger:#2d0f0f;--bg-warn:#412402;
+  --tx:#f0efe8;--tx2:#9a9a94;--tx-info:#85B7EB;--tx-success:#97C459;--tx-danger:#F09595;--tx-warn:#FAC775;
+  --bd:rgba(255,255,255,0.1);--bd2:rgba(255,255,255,0.2);}body{background:#141413;}
+}
+.app{display:flex;flex-direction:column;min-height:100vh;}
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:12px 20px;border-bottom:0.5px solid var(--bd);background:var(--bg);position:sticky;top:0;z-index:50;}
+.logo{font-size:15px;font-weight:500;letter-spacing:-.3px;color:var(--tx);}.logo span{color:#185FA5;}
+.nav-tabs{display:flex;gap:4px;}
+.nav-tab{padding:6px 14px;border-radius:var(--r);font-size:13px;cursor:pointer;border:none;background:transparent;color:var(--tx2);transition:all .15s;}
+.nav-tab.active{background:var(--bg-info);color:var(--tx-info);font-weight:500;}
+.nav-tab:hover:not(.active){background:var(--bg2);}
+.badge{background:#E24B4A;color:white;border-radius:20px;font-size:11px;font-weight:500;padding:1px 6px;margin-left:4px;display:none;}
+.main{flex:1;padding:20px;max-width:1100px;margin:0 auto;width:100%;}
+.section{display:none;}.section.active{display:block;}
+.section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;}
+.section-title{font-size:15px;font-weight:500;color:var(--tx);}
+.section-sub{font-size:13px;color:var(--tx2);margin-bottom:16px;}
+.cards-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(260px,1fr));gap:12px;margin-top:16px;}
+.prop-card{background:var(--bg);border:0.5px solid var(--bd);border-radius:var(--rl);padding:16px;cursor:pointer;transition:border-color .15s;}
+.prop-card:hover{border-color:var(--bd2);}
+.prop-price{font-size:17px;font-weight:500;color:#185FA5;}
+.prop-type-badge{font-size:11px;padding:2px 8px;border-radius:20px;background:var(--bg-info);color:var(--tx-info);}
+.prop-address{font-size:13px;color:var(--tx2);margin-bottom:10px;}
+.prop-features{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px;}
+.feat-tag{font-size:11px;padding:2px 8px;background:var(--bg2);border:0.5px solid var(--bd);border-radius:20px;color:var(--tx2);}
+.feat-tag.yes{background:var(--bg-success);color:var(--tx-success);border-color:transparent;}
+.feat-tag.no{opacity:.4;}
+.add-btn{display:flex;align-items:center;gap:6px;padding:8px 16px;border:0.5px solid var(--bd2);border-radius:var(--r);background:transparent;cursor:pointer;font-size:13px;color:var(--tx);transition:background .15s;}
+.add-btn:hover{background:var(--bg2);}
+.toggle-row{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px;}
+.toggle-btn{padding:7px 14px;border-radius:20px;border:1.5px solid var(--bd2);background:var(--bg);cursor:pointer;font-size:12px;font-weight:500;color:var(--tx2);transition:all .18s;display:flex;align-items:center;gap:5px;}
+.toggle-btn::before{content:'';display:inline-block;width:8px;height:8px;border-radius:50%;border:1.5px solid var(--bd2);transition:all .18s;flex-shrink:0;}
+.toggle-btn.on{background:#185FA5;color:white;border-color:#185FA5;}
+.toggle-btn.on::before{background:white;border-color:white;}
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.35);display:flex;align-items:center;justify-content:center;z-index:1000;padding:20px;}
+.modal{background:var(--bg);border-radius:var(--rl);border:0.5px solid var(--bd);padding:24px;width:100%;max-width:520px;max-height:85vh;overflow-y:auto;}
+.modal-title{font-size:15px;font-weight:500;margin-bottom:16px;color:var(--tx);}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;}
+.form-group{display:flex;flex-direction:column;gap:4px;margin-bottom:12px;}
+.form-label{font-size:12px;color:var(--tx2);}
+input,select,textarea{font-family:inherit;font-size:13px;padding:8px 10px;border:0.5px solid var(--bd2);border-radius:var(--r);background:var(--bg);color:var(--tx);width:100%;transition:border-color .15s;}
+input:focus,select:focus,textarea:focus{outline:none;border-color:#185FA5;}
+textarea{resize:vertical;line-height:1.5;}
+.modal-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:16px;}
+.btn-primary{padding:8px 18px;background:#185FA5;color:white;border:none;border-radius:var(--r);cursor:pointer;font-size:13px;font-weight:500;}
+.btn-primary:hover{background:#0C447C;}
+.btn-secondary{padding:8px 18px;background:transparent;border:0.5px solid var(--bd2);border-radius:var(--r);cursor:pointer;font-size:13px;color:var(--tx);}
+.btn-sm{padding:5px 11px;font-size:11px;border-radius:var(--r);cursor:pointer;border:0.5px solid var(--bd2);background:transparent;color:var(--tx2);transition:all .15s;}
+.btn-sm:hover{background:var(--bg2);}
+.btn-sm.danger{border-color:var(--bd-danger);color:var(--tx-danger);}
+.btn-sm.danger:hover{background:var(--bg-danger);}
+.req-tabs{display:flex;gap:4px;margin-bottom:16px;}
+.req-tab{padding:5px 14px;border-radius:var(--r);font-size:12px;font-weight:500;cursor:pointer;border:0.5px solid var(--bd2);background:transparent;color:var(--tx2);transition:all .15s;}
+.req-tab.active{background:var(--bg-info);color:var(--tx-info);border-color:transparent;}
+.req-list{display:flex;flex-direction:column;gap:10px;}
+.req-card{background:var(--bg);border:0.5px solid var(--bd);border-radius:var(--rl);padding:16px;}
+.req-card.isnew{border-left:3px solid #185FA5;}
+.req-card.archived{opacity:.65;}
+.req-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;}
+.req-name{font-size:14px;font-weight:500;color:var(--tx);}
+.req-date{font-size:12px;color:var(--tx2);}
+.req-details{font-size:13px;color:var(--tx2);margin-bottom:10px;line-height:1.6;}
+.req-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
+.compare-btn{padding:6px 14px;background:#185FA5;color:white;border:none;border-radius:var(--r);cursor:pointer;font-size:12px;font-weight:500;}
+.geo-badge{display:inline-flex;align-items:center;gap:4px;font-size:11px;padding:3px 8px;background:var(--bg-success);color:var(--tx-success);border-radius:20px;}
+.compare-results{margin-top:20px;}
+.compare-title{font-size:14px;font-weight:500;margin-bottom:12px;color:var(--tx);}
+.rank-item{display:flex;align-items:center;gap:12px;padding:12px;background:var(--bg);border:0.5px solid var(--bd);border-radius:var(--r);margin-bottom:4px;}
+.rank-num{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:500;flex-shrink:0;}
+.rank-1-n{background:var(--bg-warn);color:var(--tx-warn);}
+.rank-2-n,.rank-3-n{background:var(--bg2);color:var(--tx2);}
+.rank-info{flex:1;}
+.rank-address{font-size:13px;font-weight:500;color:var(--tx);}
+.rank-sub{font-size:12px;color:var(--tx2);}
+.rank-pct{font-size:15px;font-weight:500;cursor:pointer;padding:4px 8px;border-radius:var(--r);transition:background .15s;text-decoration:underline dotted;text-underline-offset:3px;}
+.rank-pct:hover{background:var(--bg2);}
+.breakdown{display:none;margin-top:4px;margin-bottom:8px;padding:10px 12px;background:var(--bg2);border-radius:var(--r);font-size:12px;}
+.breakdown.open{display:block;}
+.bk-row{display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:0.5px solid var(--bd);}
+.bk-row:last-child{border-bottom:none;}
+.bk-label{color:var(--tx2);}
+.bk-ok{color:var(--tx-success);font-weight:500;}
+.bk-no{color:var(--tx-danger);font-weight:500;}
+.bk-partial{color:#BA7517;font-weight:500;}
+.link-box{display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--bg2);border-radius:var(--r);border:0.5px solid var(--bd);margin-bottom:16px;}
+.link-url{font-size:12px;color:var(--tx-info);flex:1;word-break:break-all;}
+.copy-btn{padding:5px 12px;font-size:12px;border:0.5px solid var(--bd2);border-radius:var(--r);background:var(--bg);cursor:pointer;color:var(--tx);white-space:nowrap;transition:all .15s;}
+.copy-btn.copied{background:var(--bg-success);color:var(--tx-success);border-color:transparent;}
+.refresh-btn{padding:6px 14px;font-size:12px;border:0.5px solid var(--bd2);border-radius:var(--r);background:transparent;cursor:pointer;color:var(--tx2);transition:all .15s;}
+.refresh-btn:hover{background:var(--bg2);}
+.status-dot{width:8px;height:8px;border-radius:50%;display:inline-block;margin-right:6px;}
+.dot-live{background:#3B6D11;animation:pulse 2s infinite;}
+.dot-err{background:#A32D2D;}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:.4;}}
+.conn-status{font-size:11px;color:var(--tx2);display:flex;align-items:center;}
+.new-pill{font-size:11px;background:var(--bg-info);color:var(--tx-info);padding:2px 8px;border-radius:20px;margin-left:6px;}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="topbar">
+    <div style="display:flex;align-items:center;gap:16px;">
+      <div class="logo"><span>Casa</span>Manager</div>
+      <div class="nav-tabs">
+        <button class="nav-tab active" onclick="switchTab('case',this)">Le mie case</button>
+        <button class="nav-tab" onclick="switchTab('richieste',this)">Richieste <span class="badge" id="badge-count">0</span></button>
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;gap:16px;">
+      <div class="conn-status" id="conn-status"><span class="status-dot dot-live" id="status-dot"></span><span id="status-txt">Connesso</span></div>
+      <div style="font-size:12px;color:var(--tx2);">Stefania Cecchetti</div>
+    </div>
+  </div>
+
+  <div class="main">
+    <!-- CASE -->
+    <div class="section active" id="sec-case">
+      <div class="section-header">
+        <div><div class="section-title">Portafoglio immobili — Verona</div><div class="section-sub">Clicca su un immobile per modificarlo</div></div>
+        <button class="add-btn" onclick="openAddModal()">+ Aggiungi immobile</button>
+      </div>
+      <div class="cards-grid" id="prop-grid"></div>
+    </div>
+
+    <!-- RICHIESTE -->
+    <div class="section" id="sec-richieste">
+      <div class="section-header">
+        <div><div class="section-title">Richieste clienti</div><div class="section-sub">Aggiornamento automatico in tempo reale da Supabase</div></div>
+        <button class="refresh-btn" onclick="fetchRequests()">↻ Aggiorna ora</button>
+      </div>
+      <div style="margin-bottom:16px;">
+        <div style="font-size:12px;color:var(--tx2);margin-bottom:6px;">Link form clienti</div>
+        <div class="link-box">
+          <span class="link-url">https://tommaso0705.github.io/Casamanager/form.html</span>
+          <button class="copy-btn" id="copy-btn" onclick="copyLink()">Copia link</button>
+        </div>
+      </div>
+      <div class="req-tabs">
+        <button class="req-tab active" onclick="switchReqTab('attive',this)">Attive <span id="cnt-attive"></span></button>
+        <button class="req-tab" onclick="switchReqTab('archiviate',this)">Archiviate <span id="cnt-arch"></span></button>
+      </div>
+      <div class="req-list" id="req-list"><div style="font-size:13px;color:var(--tx2);padding:20px 0;">Caricamento richieste...</div></div>
+      <div class="compare-results" id="compare-results" style="display:none;"></div>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL IMMOBILE -->
+<div class="modal-overlay" id="modal" style="display:none;" onclick="if(event.target===this)closeModal()">
+  <div class="modal">
+    <div class="modal-title" id="modal-title">Aggiungi immobile</div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Indirizzo a Verona</label><input type="text" id="m-address" placeholder="Via Mazzini 10, Verona"></div>
+      <div class="form-group"><label class="form-label">Quartiere/Zona</label>
+        <select id="m-zona" onchange="toggleAltroZona(this)"><option>Centro Storico</option><option>Veronetta</option><option>Borgo Trento</option><option>Porta Palio</option><option>Golosine</option><option>San Zeno</option><option>Quinzano</option><option>Avesa</option><option>Parona</option><option>Pescantina</option><option value="altro">Altro...</option></select>
+      <input type="text" id="m-zona-altro" placeholder="Scrivi la zona..." style="display:none;margin-top:6px;">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Latitudine</label><input type="number" step="0.0001" id="m-lat" placeholder="45.4384"></div>
+      <div class="form-group"><label class="form-label">Longitudine</label><input type="number" step="0.0001" id="m-lng" placeholder="10.9916"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Prezzo (€)</label><input type="number" id="m-price" placeholder="350000"></div>
+      <div class="form-group"><label class="form-label">Superficie (mq)</label><input type="number" id="m-mq" placeholder="90"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Locali</label><input type="number" id="m-locali" placeholder="3" min="1"></div>
+      <div class="form-group"><label class="form-label">Tipologia</label>
+        <select id="m-tipo"><option>Appartamento</option><option>Villa</option><option>Casa indipendente</option><option>Attico</option></select>
+      </div>
+    </div>
+    <div style="font-size:12px;color:var(--tx2);margin-bottom:6px;">Caratteristiche</div>
+    <div class="toggle-row" id="modal-feats">
+      <button class="toggle-btn" onclick="toggleFeat(this)" data-key="giardino">Giardino</button>
+      <button class="toggle-btn" onclick="toggleFeat(this)" data-key="garage">Garage</button>
+      <button class="toggle-btn" onclick="toggleFeat(this)" data-key="ascensore">Ascensore</button>
+      <button class="toggle-btn" onclick="toggleFeat(this)" data-key="mansarda">Mansarda</button>
+      <button class="toggle-btn" onclick="toggleFeat(this)" data-key="terrazza">Terrazza</button>
+      <button class="toggle-btn" onclick="toggleFeat(this)" data-key="cantina">Cantina</button>
+      <button class="toggle-btn" onclick="toggleFeat(this)" data-key="piscina">Piscina</button>
+      <button class="toggle-btn" onclick="toggleFeat(this)" data-key="portineria">Portineria</button>
+    </div>
+    <div class="form-group" style="margin-top:12px;"><label class="form-label">Note sull'immobile</label><textarea id="m-note" rows="3" placeholder="Es: recentemente ristrutturato, vista panoramica, riscaldamento autonomo, spese condominiali €80/mese..."></textarea></div>
+    <div class="modal-actions">
+      <button class="btn-sm danger" id="delete-btn" onclick="deleteProperty()" style="display:none;margin-right:auto;">Elimina</button>
+      <button class="btn-secondary" onclick="closeModal()">Annulla</button>
+      <button class="btn-primary" onclick="saveProperty()">Salva immobile</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── SUPABASE CONFIG ───────────────────────────────────────
+const SB_URL='https://xbtomcvnnvghewhaynhf.supabase.co';
+const SB_KEY='sb_publishable_o3a727UHcQu7XOl0MGNvDQ_4vI_Di1_';
+const HEADERS={'Content-Type':'application/json','apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY};
+
+async function sbSelect(table,filters=''){
+  const res=await fetch(SB_URL+'/rest/v1/'+table+'?'+filters+'&order=created_at.desc',{headers:{...HEADERS,'Prefer':'return=representation'}});
+  if(!res.ok) throw new Error(await res.text());
+  return res.json();
+}
+async function sbInsert(table,data){
+  const res=await fetch(SB_URL+'/rest/v1/'+table,{method:'POST',headers:{...HEADERS,'Prefer':'return=representation'},body:JSON.stringify(data)});
+  if(!res.ok) throw new Error(await res.text());
+  return res.json();
+}
+async function sbUpdate(table,id,data){
+  const res=await fetch(SB_URL+'/rest/v1/'+table+'?id=eq.'+id,{method:'PATCH',headers:{...HEADERS,'Prefer':'return=representation'},body:JSON.stringify(data)});
+  if(!res.ok) throw new Error(await res.text());
+  return res.json();
+}
+async function sbDelete(table,id){
+  const res=await fetch(SB_URL+'/rest/v1/'+table+'?id=eq.'+id,{method:'DELETE',headers:HEADERS});
+  if(!res.ok) throw new Error(await res.text());
+}
+
+// ── GEO ──────────────────────────────────────────────────
+const VERONA_CENTER=[45.4384,10.9916];
+const ZONE_COORDS={
+  'Centro Storico':[45.4416,10.9939],'Veronetta':[45.4448,11.0041],
+  'Borgo Trento':[45.4502,10.9878],'Porta Palio':[45.4341,10.9764],
+  'Golosine':[45.4214,11.0012],'San Zeno':[45.4418,10.9761],
+  'Quinzano':[45.4178,10.9571],'Avesa':[45.4621,10.9861],
+  'Parona':[45.4561,10.9531],'Pescantina':[45.4731,10.8901]
+};
+function haversine(lat1,lng1,lat2,lng2){
+  const R=6371,dLat=(lat2-lat1)*Math.PI/180,dLng=(lng2-lng1)*Math.PI/180;
+  const a=Math.sin(dLat/2)**2+Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*Math.sin(dLng/2)**2;
+  return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));
+}
+function getReqCenter(req){
+  if(req.area_center) return [req.area_center.lat,req.area_center.lng];
+  const via=(req.via||'').toLowerCase();
+  for(const [zona,coords] of Object.entries(ZONE_COORDS)){
+    if(via.includes(zona.toLowerCase())||zona.toLowerCase().includes(via)) return coords;
+  }
+  return VERONA_CENTER;
+}
+
+// ── STATE ─────────────────────────────────────────────────
+const DEFAULT_PROPS=[
+  {id:1,address:'Via Mazzini 12, Verona',zona:'Centro Storico',lat:45.4420,lng:10.9950,price:480000,mq:120,locali:4,tipo:'Appartamento',features:{giardino:false,garage:true,ascensore:true,mansarda:false,terrazza:true,cantina:true,piscina:false,portineria:false}},
+  {id:2,address:'Via XX Settembre 5, Verona',zona:'Centro Storico',lat:45.4400,lng:10.9920,price:310000,mq:85,locali:3,tipo:'Appartamento',features:{giardino:false,garage:false,ascensore:true,mansarda:false,terrazza:false,cantina:false,piscina:false,portineria:true}},
+  {id:3,address:'Via San Zeno Maggiore 8, Verona',zona:'San Zeno',lat:45.4418,lng:10.9761,price:750000,mq:200,locali:6,tipo:'Villa',features:{giardino:true,garage:true,ascensore:false,mansarda:true,terrazza:true,cantina:true,piscina:true,portineria:false}},
+  {id:4,address:'Via Golosine 21, Verona',zona:'Golosine',lat:45.4214,lng:11.0012,price:185000,mq:70,locali:2,tipo:'Appartamento',features:{giardino:false,garage:true,ascensore:false,mansarda:false,terrazza:false,cantina:true,piscina:false,portineria:false}},
+];
+let properties=[], requests=[], nextPropId=10, editingId=null, currentReqTab='attive';
+
+function loadProperties(){const d=localStorage.getItem('cm_properties');properties=d?JSON.parse(d):JSON.parse(JSON.stringify(DEFAULT_PROPS));}
+function saveProperties(){localStorage.setItem('cm_properties',JSON.stringify(properties));}
+
+// ── FETCH REQUESTS FROM SUPABASE ──────────────────────────
+async function fetchRequests(){
+  setStatus('loading');
+  try{
+    const data=await sbSelect('requests');
+    requests=data;
+    updateBadge();
+    renderRequests();
+    setStatus('ok');
+  }catch(e){
+    console.error(e);
+    setStatus('err');
+  }
+}
+
+function setStatus(s){
+  const dot=document.getElementById('status-dot');
+  const txt=document.getElementById('status-txt');
+  if(s==='ok'){dot.className='status-dot dot-live';txt.textContent='Connesso';}
+  else if(s==='err'){dot.className='status-dot dot-err';txt.textContent='Errore connessione';}
+  else{dot.className='status-dot';txt.textContent='Aggiornamento...';}
+}
+
+// ── SCORING ───────────────────────────────────────────────
+function scoreProperty(prop,req){
+  const details=[];let score=0,max=0;
+  max+=25;let ps=prop.price<=req.budget?25:prop.price<=req.budget*1.1?12:0;score+=ps;
+  details.push({label:'Prezzo (€'+prop.price.toLocaleString('it-IT')+')',pts:ps,maxPts:25,ok:ps>=25,partial:ps>0&&ps<25});
+  max+=30;
+  const center=getReqCenter(req);
+  const dist=haversine(prop.lat,prop.lng,center[0],center[1]);
+  const raggio=parseFloat(req.raggio)||2;
+  let ds=dist<=raggio?30:dist<=raggio*1.5?18:dist<=raggio*2.5?8:0;score+=ds;
+  details.push({label:'Distanza ('+dist.toFixed(1)+' km, raggio '+raggio+' km)',pts:ds,maxPts:30,ok:ds>=30,partial:ds>0&&ds<30});
+  max+=15;let ms=prop.mq>=req.mq?15:prop.mq>=req.mq*0.85?7:0;score+=ms;
+  details.push({label:'Superficie ('+prop.mq+' mq, richiesti '+req.mq+')',pts:ms,maxPts:15,ok:ms>=15,partial:ms>0&&ms<15});
+  max+=10;let ts=(!req.tipo||prop.tipo===req.tipo)?10:0;score+=ts;
+  details.push({label:'Tipologia ('+prop.tipo+')',pts:ts,maxPts:10,ok:ts===10,partial:false});
+  max+=10;let ls=prop.locali>=req.locali?10:0;score+=ls;
+  details.push({label:'Locali ('+prop.locali+', richiesti '+req.locali+')',pts:ls,maxPts:10,ok:ls===10,partial:false});
+  const feats=req.features||{};
+  const wf=Object.entries(feats).filter(([k,v])=>v).map(([k])=>k);
+  if(wf.length>0){
+    max+=10;const matched=wf.filter(f=>prop.features[f]).length;
+    const fs=Math.round(10*matched/wf.length);score+=fs;
+    details.push({label:'Caratteristiche ('+matched+'/'+wf.length+')',pts:fs,maxPts:10,ok:matched===wf.length,partial:matched>0&&matched<wf.length});
+  }
+  return{pct:Math.round((score/max)*100),dist:dist.toFixed(1),details};
+}
+
+// ── COMPARE ───────────────────────────────────────────────
+async function compareRequest(id){
+  const req=requests.find(r=>r.id===id);if(!req) return;
+  // Mark as read
+  if(req.is_new){
+    try{await sbUpdate('requests',id,{is_new:false});}catch(e){}
+    req.is_new=false;updateBadge();renderRequests();
+  }
+  const scored=properties.map(p=>{const s=scoreProperty(p,req);return{...p,...s};}).sort((a,b)=>b.pct-a.pct);
+  const wrap=document.getElementById('compare-results');
+  wrap.style.display='block';
+  wrap._scored=scored;wrap._req=req;
+  wrap.innerHTML=`<div class="compare-title">Ranking per ${req.name} — area: ${req.via||'mappa'} (raggio ${req.raggio} km)</div>`+
+    scored.map((p,i)=>`
+      <div class="rank-item">
+        <div class="rank-num rank-${Math.min(i+1,3)}-n">${i+1}</div>
+        <div class="rank-info">
+          <div class="rank-address">${p.address}</div>
+          <div class="rank-sub">€ ${p.price.toLocaleString('it-IT')} · ${p.mq} mq · ${p.tipo} · <span style="color:${parseFloat(p.dist)<=parseFloat(req.raggio)?'var(--tx-success)':'var(--tx-danger)'};">${p.dist} km</span></div>
+        </div>
+        <div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;">
+          <span class="rank-pct" style="color:${p.pct>=70?'var(--tx-success)':p.pct>=45?'#BA7517':'var(--tx-danger)'};" onclick="toggleBreakdown(${p.id},${i})" title="Clicca per dettaglio">${p.pct}%</span>
+          <div style="width:90px;"><div style="height:5px;background:var(--bg2);border-radius:3px;overflow:hidden;"><div style="height:100%;width:${p.pct}%;background:${i===0?'#BA7517':'#185FA5'};border-radius:3px;"></div></div></div>
+        </div>
+      </div>
+      <div class="breakdown" id="bd-${p.id}"></div>
+    `).join('');
+  wrap.scrollIntoView({behavior:'smooth'});
+}
+
+function toggleBreakdown(propId,rank){
+  const wrap=document.getElementById('compare-results');
+  const p=wrap._scored.find(x=>x.id===propId);
+  const bd=document.getElementById('bd-'+propId);
+  if(bd.classList.contains('open')){bd.classList.remove('open');return;}
+  document.querySelectorAll('.breakdown.open').forEach(b=>b.classList.remove('open'));
+  bd.innerHTML=p.details.map(d=>`
+    <div class="bk-row">
+      <span class="bk-label">${d.label}</span>
+      <span class="${d.ok?'bk-ok':d.partial?'bk-partial':'bk-no'}">${d.ok?'✓ OK':d.partial?'~ Parziale':'✗ No'} (${d.pts}/${d.maxPts}pt)</span>
+    </div>`).join('');
+  bd.classList.add('open');
+}
+
+// ── ARCHIVE / DELETE ──────────────────────────────────────
+async function archiveRequest(id){
+  const r=requests.find(x=>x.id===id);if(!r) return;
+  const newVal=!r.archived;
+  try{await sbUpdate('requests',id,{archived:newVal,is_new:false});}catch(e){alert('Errore: '+e.message);return;}
+  r.archived=newVal;r.is_new=false;
+  updateBadge();renderRequests();
+  document.getElementById('compare-results').style.display='none';
+}
+async function deleteRequest(id){
+  if(!confirm('Eliminare questa richiesta?')) return;
+  try{await sbDelete('requests',id);}catch(e){alert('Errore: '+e.message);return;}
+  requests=requests.filter(r=>r.id!==id);
+  updateBadge();renderRequests();
+  document.getElementById('compare-results').style.display='none';
+}
+
+// ── BADGE & RENDER ────────────────────────────────────────
+function updateBadge(){
+  const n=requests.filter(r=>r.is_new&&!r.archived).length;
+  const b=document.getElementById('badge-count');
+  b.textContent=n;b.style.display=n>0?'':'none';
+  if(n>0 && document.title.indexOf('('+n+')')===-1) document.title='('+n+') CasaManager';
+  else if(n===0) document.title='CasaManager — Pannello Agente';
+}
+
+function switchReqTab(tab,btn){
+  currentReqTab=tab;
+  document.querySelectorAll('.req-tab').forEach(t=>t.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('compare-results').style.display='none';
+  renderRequests();
+}
+
+function renderRequests(){
+  const list=currentReqTab==='attive'?requests.filter(r=>!r.archived):requests.filter(r=>r.archived);
+  const cA=requests.filter(r=>!r.archived).length,cB=requests.filter(r=>r.archived).length;
+  document.getElementById('cnt-attive').textContent=cA>0?'('+cA+')':'';
+  document.getElementById('cnt-arch').textContent=cB>0?'('+cB+')':'';
+  const featsLabel=r=>Object.entries(r.features||{}).filter(([k,v])=>v).map(([k])=>k).join(', ')||'nessuna';
+  document.getElementById('req-list').innerHTML=list.length===0
+    ?`<div style="font-size:13px;color:var(--tx2);padding:24px 0;text-align:center;">${currentReqTab==='attive'?'Nessuna richiesta attiva. Il pannello si aggiorna automaticamente quando arriva una nuova richiesta.':'Nessuna richiesta archiviata.'}</div>`
+    :list.map(r=>`
+    <div class="req-card ${r.is_new&&!r.archived?'isnew':''} ${r.archived?'archived':''}">
+      <div class="req-header">
+        <div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">
+          <span class="req-name">${r.name}</span>
+          ${r.is_new&&!r.archived?'<span class="new-pill">Nuova</span>':''}
+          ${r.archived?'<span style="font-size:11px;background:var(--bg2);color:var(--tx2);padding:2px 8px;border-radius:20px;">Archiviata</span>':''}
+        </div>
+        <span class="req-date">${r.date}</span>
+      </div>
+      <div class="req-details">
+        ${r.tipo||'Qualsiasi tipo'} · <span class="geo-badge">📍 ${r.via||'area su mappa'} (${r.raggio} km)</span> · fino a € ${parseInt(r.budget).toLocaleString('it-IT')} · min ${r.mq} mq · ${r.locali}+ locali<br>
+        Caratteristiche: ${featsLabel(r)}${r.note?'<br><em>Note: '+r.note+'</em>':''}
+        <br><span style="font-size:11px;">${r.email}${r.tel?' · '+r.tel:''}</span>
+      </div>
+      <div class="req-actions">
+        ${!r.archived?`<button class="compare-btn" onclick="compareRequest('${r.id}')">Compara immobili</button>`:''}
+        <button class="btn-sm" onclick="archiveRequest('${r.id}')">${r.archived?'Riattiva':'Archivia'}</button>
+        <button class="btn-sm danger" onclick="deleteRequest('${r.id}')">Elimina</button>
+      </div>
+    </div>`).join('');
+}
+
+// ── PROPERTIES ────────────────────────────────────────────
+function renderProperties(){
+  document.getElementById('prop-grid').innerHTML=properties.map(p=>{
+    const yf=Object.entries(p.features).filter(([k,v])=>v).map(([k])=>k);
+    const nf=Object.entries(p.features).filter(([k,v])=>!v).map(([k])=>k);
+    return`<div class="prop-card" onclick="openEditModal(${p.id})">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px;">
+        <div class="prop-price">€ ${p.price.toLocaleString('it-IT')}</div><span class="prop-type-badge">${p.tipo}</span>
+      </div>
+      <div class="prop-address">${p.address}</div>
+      <div style="font-size:12px;color:var(--tx2);margin-bottom:4px;">${p.zona} · ${p.mq} mq · ${p.locali} locali</div>
+      ${p.note?`<div style="font-size:11px;color:var(--tx2);margin-bottom:4px;font-style:italic;line-height:1.4;">${p.note}</div>`:''}
+      <div class="prop-features">
+        ${yf.map(f=>`<span class="feat-tag yes">${f}</span>`).join('')}
+        ${nf.slice(0,3).map(f=>`<span class="feat-tag no">${f}</span>`).join('')}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function switchTab(tab,btn){
+  document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.section').forEach(s=>s.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('sec-'+tab).classList.add('active');
+  if(tab==='richieste'){fetchRequests();}
+}
+
+function toggleFeat(btn){btn.classList.toggle('on');}
+function copyLink(){
+  navigator.clipboard.writeText('https://tommaso0705.github.io/Casamanager/form.html').then(()=>{
+    const b=document.getElementById('copy-btn');b.textContent='Copiato!';b.classList.add('copied');
+    setTimeout(()=>{b.textContent='Copia link';b.classList.remove('copied');},2000);
+  });
+}
+
+function openAddModal(){
+  editingId=null;
+  document.getElementById('modal-title').textContent='Aggiungi immobile';
+  ['m-address','m-price','m-mq','m-locali'].forEach(id=>document.getElementById(id).value='');
+  document.getElementById('m-lat').value='45.4384';document.getElementById('m-lng').value='10.9916';
+  document.getElementById('m-tipo').value='Appartamento';document.getElementById('m-zona').value='Centro Storico';document.getElementById('m-zona-altro').style.display='none';document.getElementById('m-zona-altro').value='';document.getElementById('m-note').value='';
+  document.querySelectorAll('#modal-feats .toggle-btn').forEach(b=>b.classList.remove('on'));
+  document.getElementById('delete-btn').style.display='none';
+  document.getElementById('modal').style.display='flex';
+}
+function openEditModal(id){
+  editingId=id;const p=properties.find(x=>x.id===id);if(!p) return;
+  document.getElementById('modal-title').textContent='Modifica immobile';
+  document.getElementById('m-address').value=p.address;document.getElementById('m-price').value=p.price;
+  document.getElementById('m-mq').value=p.mq;document.getElementById('m-locali').value=p.locali;
+  document.getElementById('m-lat').value=p.lat;document.getElementById('m-lng').value=p.lng;
+  document.getElementById('m-tipo').value=p.tipo;
+  const zonaOpts=['Centro Storico','Veronetta','Borgo Trento','Porta Palio','Golosine','San Zeno','Quinzano','Avesa','Parona','Pescantina'];
+  const zonaEl=document.getElementById('m-zona');
+  const zonaAltroEl=document.getElementById('m-zona-altro');
+  if(zonaOpts.includes(p.zona)){zonaEl.value=p.zona;zonaAltroEl.style.display='none';}
+  else{zonaEl.value='altro';zonaAltroEl.value=p.zona;zonaAltroEl.style.display='block';}
+  document.querySelectorAll('#modal-feats .toggle-btn').forEach(b=>b.classList.toggle('on',!!p.features[b.dataset.key]));
+  document.getElementById('m-note').value=p.note||'';
+  document.getElementById('delete-btn').style.display='';
+  document.getElementById('modal').style.display='flex';
+}
+function closeModal(){document.getElementById('modal').style.display='none';}
+
+function toggleAltroZona(sel){
+  const inp=document.getElementById('m-zona-altro');
+  inp.style.display=sel.value==='altro'?'block':'none';
+  if(sel.value==='altro') inp.focus();
+}
+function getZonaValue(){
+  const sel=document.getElementById('m-zona');
+  if(sel.value==='altro'){
+    const v=document.getElementById('m-zona-altro').value.trim();
+    return v||'Altro';
+  }
+  return sel.value;
+}
+function saveProperty(){
+  const features={};
+  document.querySelectorAll('#modal-feats .toggle-btn').forEach(b=>{features[b.dataset.key]=b.classList.contains('on');});
+  const zona=getZonaValue();
+  const prop={id:editingId||nextPropId++,address:document.getElementById('m-address').value||'Indirizzo non specificato',zona,
+    lat:parseFloat(document.getElementById('m-lat').value)||(ZONE_COORDS[zona]||VERONA_CENTER)[0],
+    lng:parseFloat(document.getElementById('m-lng').value)||(ZONE_COORDS[zona]||VERONA_CENTER)[1],
+    price:parseInt(document.getElementById('m-price').value)||0,mq:parseInt(document.getElementById('m-mq').value)||0,
+    locali:parseInt(document.getElementById('m-locali').value)||1,tipo:document.getElementById('m-tipo').value,features,
+    note:document.getElementById('m-note').value.trim()};
+  if(editingId){const i=properties.findIndex(x=>x.id===editingId);properties[i]=prop;}
+  else properties.push(prop);
+  saveProperties();closeModal();renderProperties();
+}
+function deleteProperty(){
+  if(!editingId||!confirm('Eliminare questo immobile?')) return;
+  properties=properties.filter(p=>p.id!==editingId);
+  saveProperties();closeModal();renderProperties();
+}
+
+// ── INIT ──────────────────────────────────────────────────
+loadProperties();renderProperties();
+
+// Auto-polling ogni 30 secondi per nuove richieste
+setInterval(async()=>{
+  try{
+    const data=await sbSelect('requests');
+    const prevNew=requests.filter(r=>r.is_new&&!r.archived).length;
+    requests=data;
+    const newNew=requests.filter(r=>r.is_new&&!r.archived).length;
+    updateBadge();
+    // Notifica browser se ci sono nuove richieste
+    if(newNew>prevNew && Notification.permission==='granted'){
+      new Notification('CasaManager — Nuova richiesta!',{body:'Hai '+newNew+' nuova/e richiesta/e da clienti.',icon:''});
+    }
+    if(document.getElementById('sec-richieste').classList.contains('active')) renderRequests();
+  }catch(e){}
+},30000);
+
+// Chiedi permesso notifiche
+if('Notification' in window && Notification.permission==='default') Notification.requestPermission();
+</script>
+</body>
+</html>
