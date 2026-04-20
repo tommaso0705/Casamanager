@@ -1,0 +1,721 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>CasaManager — Pannello Agente</title>
+<link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f5f5f3;color:#1a1a1a;font-size:15px;}
+:root{--bg:#fff;--bg2:#f0efe8;--bg-info:#e6f1fb;--bg-success:#eaf3de;--bg-danger:#fcebeb;--bg-warn:#faeeda;--tx:#1a1a1a;--tx2:#6b6b67;--tx-info:#185FA5;--tx-success:#3B6D11;--tx-danger:#A32D2D;--tx-warn:#633806;--bd:rgba(0,0,0,0.12);--bd2:rgba(0,0,0,0.22);--bd-danger:rgba(163,45,45,0.4);--r:8px;--rl:12px;}
+@media(prefers-color-scheme:dark){:root{--bg:#1e1e1c;--bg2:#2a2a28;--bg-info:#0c2e4a;--bg-success:#173404;--bg-danger:#2d0f0f;--bg-warn:#412402;--tx:#f0efe8;--tx2:#9a9a94;--tx-info:#85B7EB;--tx-success:#97C459;--tx-danger:#F09595;--tx-warn:#FAC775;--bd:rgba(255,255,255,0.1);--bd2:rgba(255,255,255,0.2);}body{background:#141413;}}
+.app{display:flex;flex-direction:column;min-height:100vh;}
+.topbar{display:flex;align-items:center;justify-content:space-between;padding:12px 20px;border-bottom:0.5px solid var(--bd);background:var(--bg);position:sticky;top:0;z-index:50;}
+.logo{font-size:15px;font-weight:500;letter-spacing:-.3px;color:var(--tx);}.logo span{color:#185FA5;}
+.nav-tabs{display:flex;gap:4px;}
+.nav-tab{padding:6px 14px;border-radius:var(--r);font-size:13px;cursor:pointer;border:none;background:transparent;color:var(--tx2);transition:all .15s;}
+.nav-tab.active{background:var(--bg-info);color:var(--tx-info);font-weight:500;}
+.nav-tab:hover:not(.active){background:var(--bg2);}
+.badge{background:#E24B4A;color:white;border-radius:20px;font-size:11px;font-weight:500;padding:1px 6px;margin-left:4px;display:none;}
+.main{flex:1;padding:20px;max-width:1200px;margin:0 auto;width:100%;}
+.section{display:none;}.section.active{display:block;}
+.section-header{display:flex;align-items:center;justify-content:space-between;margin-bottom:4px;}
+.section-title{font-size:15px;font-weight:500;color:var(--tx);}
+.section-sub{font-size:13px;color:var(--tx2);margin-bottom:12px;}
+.catalog-toolbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-bottom:16px;padding:12px;background:var(--bg);border:0.5px solid var(--bd);border-radius:var(--rl);}
+.filter-select{font-size:12px;padding:6px 10px;border:0.5px solid var(--bd2);border-radius:var(--r);background:var(--bg);color:var(--tx);cursor:pointer;}
+.filter-select:focus{outline:none;border-color:#185FA5;}
+.filter-sep{width:1px;height:20px;background:var(--bd2);margin:0 4px;}
+.sort-btn{padding:5px 12px;font-size:12px;border:0.5px solid var(--bd2);border-radius:var(--r);background:transparent;cursor:pointer;color:var(--tx2);transition:all .15s;}
+.sort-btn.active{background:var(--bg-info);color:var(--tx-info);border-color:transparent;}
+.sort-dir{padding:5px 8px;font-size:12px;border:0.5px solid var(--bd2);border-radius:var(--r);background:transparent;cursor:pointer;color:var(--tx2);}
+.filter-count{font-size:12px;color:var(--tx2);margin-left:auto;}
+.cards-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(280px,1fr));gap:14px;}
+.prop-card{background:var(--bg);border:0.5px solid var(--bd);border-radius:var(--rl);cursor:pointer;transition:border-color .15s;overflow:hidden;}
+.prop-card:hover{border-color:var(--bd2);}
+.prop-card-img-gallery{position:relative;height:160px;overflow:hidden;}
+.prop-card-img-gallery img{width:100%;height:100%;object-fit:cover;}
+.prop-card-img-placeholder{width:100%;height:160px;background:var(--bg2);display:flex;align-items:center;justify-content:center;font-size:32px;color:var(--bd2);}
+.photo-count-badge{position:absolute;bottom:6px;right:6px;background:rgba(0,0,0,0.55);color:white;font-size:11px;padding:2px 7px;border-radius:20px;}
+.prop-card-body{padding:14px;}
+.prop-price{font-size:17px;font-weight:500;color:#185FA5;}
+.prop-type-badge{font-size:11px;padding:2px 8px;border-radius:20px;background:var(--bg-info);color:var(--tx-info);}
+.status-badge{font-size:11px;padding:2px 8px;border-radius:20px;font-weight:500;}
+.status-disponibile{background:var(--bg-success);color:var(--tx-success);}
+.status-trattativa{background:var(--bg-warn);color:var(--tx-warn);}
+.status-venduta{background:var(--bg2);color:var(--tx2);}
+.prop-address{font-size:13px;color:var(--tx2);margin-bottom:6px;}
+.prop-features{display:flex;flex-wrap:wrap;gap:5px;margin-top:8px;}
+.feat-tag{font-size:11px;padding:2px 8px;background:var(--bg2);border:0.5px solid var(--bd);border-radius:20px;color:var(--tx2);}
+.feat-tag.yes{background:var(--bg-success);color:var(--tx-success);border-color:transparent;}
+.feat-tag.no{opacity:.4;}
+.add-btn{display:flex;align-items:center;gap:6px;padding:8px 16px;border:0.5px solid var(--bd2);border-radius:var(--r);background:transparent;cursor:pointer;font-size:13px;color:var(--tx);transition:background .15s;}
+.add-btn:hover{background:var(--bg2);}
+.toggle-row{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:12px;}
+.toggle-btn{padding:7px 14px;border-radius:20px;border:1.5px solid var(--bd2);background:var(--bg);cursor:pointer;font-size:12px;font-weight:500;color:var(--tx2);transition:all .18s;display:flex;align-items:center;gap:5px;}
+.toggle-btn::before{content:'';display:inline-block;width:8px;height:8px;border-radius:50%;border:1.5px solid var(--bd2);transition:all .18s;flex-shrink:0;}
+.toggle-btn.on{background:#185FA5;color:white;border-color:#185FA5;}
+.toggle-btn.on::before{background:white;border-color:white;}
+.photo-upload-area{border:1.5px dashed var(--bd2);border-radius:var(--rl);padding:16px;text-align:center;cursor:pointer;transition:border-color .15s;margin-bottom:8px;}
+.photo-upload-area:hover{border-color:#185FA5;}
+.photo-upload-area input{display:none;}
+.photo-previews{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:4px;}
+.photo-thumb{position:relative;width:80px;height:80px;border-radius:var(--r);overflow:hidden;border:0.5px solid var(--bd);}
+.photo-thumb img{width:100%;height:100%;object-fit:cover;}
+.photo-thumb-del{position:absolute;top:2px;right:2px;width:18px;height:18px;border-radius:50%;background:rgba(0,0,0,0.6);color:white;border:none;cursor:pointer;font-size:11px;line-height:1;}
+.modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.35);display:flex;align-items:center;justify-content:center;z-index:1000;padding:20px;}
+.modal{background:var(--bg);border-radius:var(--rl);border:0.5px solid var(--bd);padding:24px;width:100%;max-width:540px;max-height:90vh;overflow-y:auto;}
+.modal-title{font-size:15px;font-weight:500;margin-bottom:16px;color:var(--tx);}
+.form-row{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px;}
+.form-group{display:flex;flex-direction:column;gap:4px;margin-bottom:12px;}
+.form-label{font-size:12px;color:var(--tx2);}
+input,select,textarea{font-family:inherit;font-size:13px;padding:8px 10px;border:0.5px solid var(--bd2);border-radius:var(--r);background:var(--bg);color:var(--tx);width:100%;transition:border-color .15s;}
+input:focus,select:focus,textarea:focus{outline:none;border-color:#185FA5;}
+textarea{resize:vertical;line-height:1.5;}
+.modal-actions{display:flex;gap:8px;justify-content:flex-end;margin-top:16px;}
+.btn-primary{padding:8px 18px;background:#185FA5;color:white;border:none;border-radius:var(--r);cursor:pointer;font-size:13px;font-weight:500;}
+.btn-primary:hover{background:#0C447C;}
+.btn-secondary{padding:8px 18px;background:transparent;border:0.5px solid var(--bd2);border-radius:var(--r);cursor:pointer;font-size:13px;color:var(--tx);}
+.btn-sm{padding:5px 11px;font-size:11px;border-radius:var(--r);cursor:pointer;border:0.5px solid var(--bd2);background:transparent;color:var(--tx2);transition:all .15s;}
+.btn-sm:hover{background:var(--bg2);}
+.btn-sm.danger{border-color:var(--bd-danger);color:var(--tx-danger);}
+.btn-sm.danger:hover{background:var(--bg-danger);}
+.btn-sm.contacted{border-color:var(--tx-success);color:var(--tx-success);background:var(--bg-success);}
+.req-tabs{display:flex;gap:4px;margin-bottom:16px;}
+.req-tab{padding:5px 14px;border-radius:var(--r);font-size:12px;font-weight:500;cursor:pointer;border:0.5px solid var(--bd2);background:transparent;color:var(--tx2);transition:all .15s;}
+.req-tab.active{background:var(--bg-info);color:var(--tx-info);border-color:transparent;}
+.req-list{display:flex;flex-direction:column;gap:10px;}
+.req-card{background:var(--bg);border:0.5px solid var(--bd);border-radius:var(--rl);padding:16px;}
+.req-card.isnew{border-left:3px solid #185FA5;}
+.req-card.archived{opacity:.65;}
+.req-card.contacted-card{border-left:3px solid var(--tx-success);}
+.req-header{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;}
+.req-name{font-size:14px;font-weight:500;color:var(--tx);}
+.req-date{font-size:12px;color:var(--tx2);}
+.req-details{font-size:13px;color:var(--tx2);margin-bottom:10px;line-height:1.6;}
+.req-actions{display:flex;gap:8px;align-items:center;flex-wrap:wrap;}
+.compare-btn{padding:6px 14px;background:#185FA5;color:white;border:none;border-radius:var(--r);cursor:pointer;font-size:12px;font-weight:500;}
+.geo-badge{display:inline-flex;align-items:center;gap:4px;font-size:11px;padding:3px 8px;background:var(--bg-success);color:var(--tx-success);border-radius:20px;}
+.new-pill{font-size:11px;background:var(--bg-info);color:var(--tx-info);padding:2px 8px;border-radius:20px;margin-left:6px;}
+.contacted-pill{font-size:11px;background:var(--bg-success);color:var(--tx-success);padding:2px 8px;border-radius:20px;margin-left:6px;}
+.req-info-pills{display:flex;gap:6px;margin-top:6px;flex-wrap:wrap;}
+.req-pill{font-size:11px;padding:2px 8px;border-radius:20px;}
+.pill-warn{background:var(--bg-warn);color:var(--tx-warn);}
+.pill-info{background:var(--bg-info);color:var(--tx-info);}
+.pill-muted{background:var(--bg2);color:var(--tx2);}
+.inline-compare{margin-top:12px;border-top:0.5px solid var(--bd);padding-top:12px;}
+.inline-compare-header{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;}
+.inline-compare-title{font-size:13px;font-weight:500;color:var(--tx);}
+.close-compare-btn{padding:3px 10px;font-size:11px;border:0.5px solid var(--bd2);border-radius:var(--r);background:transparent;cursor:pointer;color:var(--tx2);}
+.close-compare-btn:hover{background:var(--bg2);}
+.rank-item{display:flex;align-items:center;gap:12px;padding:12px;background:var(--bg);border:0.5px solid var(--bd);border-radius:var(--r);margin-bottom:4px;}
+.rank-num{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:500;flex-shrink:0;}
+.rank-1-n{background:var(--bg-warn);color:var(--tx-warn);}
+.rank-2-n,.rank-3-n{background:var(--bg2);color:var(--tx2);}
+.rank-info{flex:1;min-width:0;}
+.rank-address{font-size:13px;font-weight:500;color:var(--tx);}
+.rank-sub{font-size:12px;color:var(--tx2);}
+.rank-pct{font-size:15px;font-weight:500;cursor:pointer;padding:4px 8px;border-radius:var(--r);transition:background .15s;text-decoration:underline dotted;text-underline-offset:3px;white-space:nowrap;}
+.rank-pct:hover{background:var(--bg2);}
+.breakdown{display:none;margin-top:4px;margin-bottom:8px;padding:10px 12px;background:var(--bg2);border-radius:var(--r);font-size:12px;}
+.breakdown.open{display:block;}
+.bk-row{padding:6px 0;border-bottom:0.5px solid var(--bd);}
+.bk-row:last-child{border-bottom:none;}
+.bk-row-top{display:flex;justify-content:space-between;align-items:flex-start;}
+.bk-label{color:var(--tx2);font-size:12px;}
+.bk-note{font-size:11px;color:var(--tx2);}
+.bk-status{font-weight:500;font-size:12px;white-space:nowrap;padding-left:8px;}
+.bk-ok{color:var(--tx-success);}
+.bk-no{color:var(--tx-danger);}
+.bk-partial{color:#BA7517;}
+.bk-feats{display:flex;flex-wrap:wrap;gap:4px;margin-top:6px;}
+.bk-feat-ok{font-size:10px;padding:1px 7px;border-radius:20px;background:var(--bg-success);color:var(--tx-success);}
+.bk-feat-no{font-size:10px;padding:1px 7px;border-radius:20px;background:var(--bg-danger);color:var(--tx-danger);}
+.cmp-map-panel{margin-top:8px;border-radius:var(--r);overflow:hidden;border:0.5px solid var(--bd);display:none;height:260px;pointer-events:all;}
+.cmp-map-panel.open{display:block;}
+.map-open-btn{font-size:11px;padding:3px 10px;border:0.5px solid var(--tx-info);border-radius:var(--r);background:var(--bg-info);color:var(--tx-info);cursor:pointer;margin-top:6px;display:inline-block;}
+.link-box{display:flex;align-items:center;gap:10px;padding:10px 14px;background:var(--bg2);border-radius:var(--r);border:0.5px solid var(--bd);margin-bottom:16px;}
+.link-url{font-size:12px;color:var(--tx-info);flex:1;word-break:break-all;}
+.copy-btn{padding:5px 12px;font-size:12px;border:0.5px solid var(--bd2);border-radius:var(--r);background:var(--bg);cursor:pointer;color:var(--tx);white-space:nowrap;}
+.copy-btn.copied{background:var(--bg-success);color:var(--tx-success);border-color:transparent;}
+.refresh-btn{padding:6px 14px;font-size:12px;border:0.5px solid var(--bd2);border-radius:var(--r);background:transparent;cursor:pointer;color:var(--tx2);}
+.refresh-btn:hover{background:var(--bg2);}
+.status-dot{width:8px;height:8px;border-radius:50%;display:inline-block;margin-right:6px;}
+.dot-live{background:#3B6D11;animation:pulse 2s infinite;}
+.dot-err{background:#A32D2D;}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:.4;}}
+.conn-status{font-size:11px;color:var(--tx2);display:flex;align-items:center;}
+.ac-wrap{position:relative;}
+.ac-list{position:absolute;top:100%;left:0;right:0;background:var(--bg);border:0.5px solid var(--bd2);border-radius:var(--r);z-index:200;max-height:220px;overflow-y:auto;box-shadow:0 4px 16px rgba(0,0,0,0.12);margin-top:2px;display:none;}
+.ac-item{padding:10px 12px;font-size:13px;cursor:pointer;border-bottom:0.5px solid var(--bd);color:var(--tx);line-height:1.4;}
+.ac-item:last-child{border-bottom:none;}
+.ac-item:hover,.ac-item.active{background:var(--bg-info);color:var(--tx-info);}
+.ac-item small{display:block;font-size:11px;color:var(--tx2);margin-top:2px;}
+.ac-loading{padding:10px 12px;font-size:12px;color:var(--tx2);}
+.geo-fill-badge{font-size:11px;color:var(--tx-success);margin-top:4px;display:none;}
+</style>
+</head>
+<body>
+<div class="app">
+  <div class="topbar">
+    <div style="display:flex;align-items:center;gap:16px;">
+      <div class="logo"><span>Casa</span>Manager</div>
+      <div class="nav-tabs">
+        <button class="nav-tab active" onclick="switchTab('case',this)">Le mie case</button>
+        <button class="nav-tab" onclick="switchTab('richieste',this)">Richieste <span class="badge" id="badge-count">0</span></button>
+      </div>
+    </div>
+    <div style="display:flex;align-items:center;gap:16px;">
+      <div class="conn-status"><span class="status-dot dot-live" id="status-dot"></span><span id="status-txt">Connesso</span></div>
+      <div style="font-size:12px;color:var(--tx2);">Stefania Cecchetti</div>
+    </div>
+  </div>
+  <div class="main">
+    <div class="section active" id="sec-case">
+      <div class="section-header">
+        <div><div class="section-title">Portafoglio immobili — Verona</div><div class="section-sub">Clicca su un immobile per modificarlo</div></div>
+        <button class="add-btn" onclick="openAddModal()">+ Aggiungi immobile</button>
+      </div>
+      <div class="catalog-toolbar">
+        <select class="filter-select" id="f-tipo" onchange="renderProperties()">
+          <option value="">Tutti i tipi</option><option>Appartamento</option><option>Villa</option><option>Casa indipendente</option><option>Attico</option>
+        </select>
+        <select class="filter-select" id="f-zona" onchange="renderProperties()">
+          <option value="">Tutte le zone</option><option>Centro Storico</option><option>Veronetta</option><option>Borgo Trento</option><option>Porta Palio</option><option>Golosine</option><option>San Zeno</option><option>Quinzano</option><option>Avesa</option><option>Parona</option><option>Pescantina</option>
+        </select>
+        <select class="filter-select" id="f-status" onchange="renderProperties()">
+          <option value="">Tutti gli stati</option><option>Disponibile</option><option>In trattativa</option><option>Venduta</option>
+        </select>
+        <select class="filter-select" id="f-price-max" onchange="renderProperties()">
+          <option value="">Qualsiasi prezzo</option><option value="200000">fino a 200k</option><option value="350000">fino a 350k</option><option value="500000">fino a 500k</option><option value="800000">fino a 800k</option>
+        </select>
+        <div class="filter-sep"></div>
+        <button class="sort-btn active" id="sort-date" onclick="setSort('date',this)">Data</button>
+        <button class="sort-btn" id="sort-price" onclick="setSort('price',this)">Prezzo</button>
+        <button class="sort-dir" id="sort-dir-btn" onclick="toggleSortDir()">&#8595;</button>
+        <span class="filter-count" id="filter-count"></span>
+      </div>
+      <div class="cards-grid" id="prop-grid"></div>
+    </div>
+    <div class="section" id="sec-richieste">
+      <div class="section-header">
+        <div><div class="section-title">Richieste clienti</div><div class="section-sub">Aggiornamento automatico ogni 30 secondi</div></div>
+        <button class="refresh-btn" onclick="fetchRequests()">&#8635; Aggiorna ora</button>
+      </div>
+      <div style="margin-bottom:16px;">
+        <div style="font-size:12px;color:var(--tx2);margin-bottom:6px;">Link form clienti</div>
+        <div class="link-box">
+          <span class="link-url">https://tommaso0705.github.io/Casamanager/form.html</span>
+          <button class="copy-btn" id="copy-btn" onclick="copyLink()">Copia link</button>
+        </div>
+      </div>
+      <div class="req-tabs">
+        <button class="req-tab active" onclick="switchReqTab('attive',this)">Attive <span id="cnt-attive"></span></button>
+        <button class="req-tab" onclick="switchReqTab('archiviate',this)">Archiviate <span id="cnt-arch"></span></button>
+      </div>
+      <div class="req-list" id="req-list"><div style="font-size:13px;color:var(--tx2);padding:20px 0;">Caricamento...</div></div>
+    </div>
+  </div>
+</div>
+<div class="modal-overlay" id="modal" style="display:none;" onclick="if(event.target===this)closeModal()">
+  <div class="modal">
+    <div class="modal-title" id="modal-title">Aggiungi immobile</div>
+    <div style="font-size:12px;color:var(--tx2);margin-bottom:6px;">Foto (max 3)</div>
+    <div class="photo-previews" id="photo-previews"></div>
+    <div class="photo-upload-area" id="photo-upload-area" onclick="document.getElementById('photo-input').click()">
+      <input type="file" id="photo-input" accept="image/*" multiple onchange="handlePhotoUpload(event)">
+      <div style="font-size:13px;color:var(--tx2);">Clicca per caricare foto</div>
+      <div style="font-size:11px;color:var(--tx2);margin-top:4px;">JPG, PNG - max 3</div>
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">Indirizzo a Verona</label>
+        <div class="ac-wrap">
+          <input type="text" id="m-address" placeholder="Inizia a scrivere..." autocomplete="off" oninput="onAddressInput(this.value)" onkeydown="onAddressKey(event)">
+          <div class="ac-list" id="ac-list"></div>
+        </div>
+        <div class="geo-fill-badge" id="geo-badge">Coordinate compilate automaticamente</div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">Quartiere/Zona</label>
+        <select id="m-zona" onchange="toggleAltroZona(this)">
+          <option>Centro Storico</option><option>Veronetta</option><option>Borgo Trento</option><option>Porta Palio</option><option>Golosine</option><option>San Zeno</option><option>Quinzano</option><option>Avesa</option><option>Parona</option><option>Pescantina</option><option value="altro">Altro...</option>
+        </select>
+        <input type="text" id="m-zona-altro" placeholder="Scrivi la zona..." style="display:none;margin-top:6px;">
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Latitudine</label><input type="number" step="0.0001" id="m-lat" placeholder="45.4384"></div>
+      <div class="form-group"><label class="form-label">Longitudine</label><input type="number" step="0.0001" id="m-lng" placeholder="10.9916"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Prezzo (euro)</label><input type="number" id="m-price" placeholder="350000"></div>
+      <div class="form-group"><label class="form-label">Superficie (mq)</label><input type="number" id="m-mq" placeholder="90"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Locali</label><input type="number" id="m-locali" placeholder="3" min="1"></div>
+      <div class="form-group"><label class="form-label">Tipologia</label>
+        <select id="m-tipo"><option>Appartamento</option><option>Villa</option><option>Casa indipendente</option><option>Attico</option></select>
+      </div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Stato immobile</label>
+        <select id="m-status"><option value="Disponibile">Disponibile</option><option value="In trattativa">In trattativa</option><option value="Venduta">Venduta</option></select>
+      </div>
+      <div class="form-group"><label class="form-label">Spese condominiali (euro/mese)</label><input type="number" id="m-spese" placeholder="Es: 80" min="0"></div>
+    </div>
+    <div class="form-row">
+      <div class="form-group"><label class="form-label">Piano</label><select id="m-piano"><option value="">Non specificato</option><option>Piano terra</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6+</option><option>Ultimo piano</option><option>Attico</option></select></div>
+      <div class="form-group"><label class="form-label">Ascensore</label><div style="font-size:11px;color:var(--tx2);padding-top:10px;">Usa il toggle sotto</div></div>
+    </div>
+    <div style="font-size:12px;color:var(--tx2);margin-bottom:6px;">Caratteristiche</div>
+    <div class="toggle-row" id="modal-feats">
+      <button class="toggle-btn" onclick="toggleFeat(this)" data-key="giardino">Giardino</button>
+      <button class="toggle-btn" onclick="toggleFeat(this)" data-key="garage">Garage</button>
+      <button class="toggle-btn" onclick="toggleFeat(this)" data-key="ascensore">Ascensore</button>
+      <button class="toggle-btn" onclick="toggleFeat(this)" data-key="mansarda">Mansarda</button>
+      <button class="toggle-btn" onclick="toggleFeat(this)" data-key="terrazza">Terrazza</button>
+      <button class="toggle-btn" onclick="toggleFeat(this)" data-key="cantina">Cantina</button>
+      <button class="toggle-btn" onclick="toggleFeat(this)" data-key="piscina">Piscina</button>
+      <button class="toggle-btn" onclick="toggleFeat(this)" data-key="portineria">Portineria</button>
+    </div>
+    <div class="form-group" style="margin-top:4px;"><label class="form-label">Note sull'immobile</label>
+      <textarea id="m-note" rows="3" placeholder="Es: recentemente ristrutturato, vista panoramica..."></textarea>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-sm danger" id="delete-btn" onclick="deleteProperty()" style="display:none;margin-right:auto;">Elimina</button>
+      <button class="btn-secondary" onclick="closeModal()">Annulla</button>
+      <button class="btn-primary" onclick="saveProperty()">Salva immobile</button>
+    </div>
+  </div>
+</div>
+<script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+<script>
+var SB_URL='https://xbtomcvnnvghewhaynhf.supabase.co';
+var SB_KEY='sb_publishable_o3a727UHcQu7XOl0MGNvDQ_4vI_Di1_';
+var SBH={'Content-Type':'application/json','apikey':SB_KEY,'Authorization':'Bearer '+SB_KEY};
+function sbSelect(t,f){return fetch(SB_URL+'/rest/v1/'+t+'?'+(f||'')+'&order=created_at.desc',{headers:Object.assign({},SBH,{'Prefer':'return=representation'})}).then(function(r){if(!r.ok)return r.text().then(function(e){throw new Error(e);});return r.json();});}
+function sbUpdate(t,id,d){return fetch(SB_URL+'/rest/v1/'+t+'?id=eq.'+id,{method:'PATCH',headers:Object.assign({},SBH,{'Prefer':'return=representation'}),body:JSON.stringify(d)}).then(function(r){if(!r.ok)return r.text().then(function(e){throw new Error(e);});return r.json();});}
+function sbDelete(t,id){return fetch(SB_URL+'/rest/v1/'+t+'?id=eq.'+id,{method:'DELETE',headers:SBH}).then(function(r){if(!r.ok)return r.text().then(function(e){throw new Error(e);});});}
+
+var VC=[45.4384,10.9916];
+var ZC={'Centro Storico':[45.4416,10.9939],'Veronetta':[45.4448,11.0041],'Borgo Trento':[45.4502,10.9878],'Porta Palio':[45.4341,10.9764],'Golosine':[45.4214,11.0012],'San Zeno':[45.4418,10.9761],'Quinzano':[45.4178,10.9571],'Avesa':[45.4621,10.9861],'Parona':[45.4561,10.9531],'Pescantina':[45.4731,10.8901]};
+function hav(la1,ln1,la2,ln2){var R=6371,dL=(la2-la1)*Math.PI/180,dN=(ln2-ln1)*Math.PI/180;var a=Math.sin(dL/2)*Math.sin(dL/2)+Math.cos(la1*Math.PI/180)*Math.cos(la2*Math.PI/180)*Math.sin(dN/2)*Math.sin(dN/2);return R*2*Math.atan2(Math.sqrt(a),Math.sqrt(1-a));}
+function reqCenter(req){if(req.area_center)return[req.area_center.lat,req.area_center.lng];var v=(req.via||'').toLowerCase();for(var z in ZC){if(v.indexOf(z.toLowerCase())>=0||z.toLowerCase().indexOf(v)>=0)return ZC[z];}return VC;}
+
+var DP=[
+  {id:1,address:'Via Mazzini 12, Verona',zona:'Centro Storico',lat:45.4420,lng:10.9950,price:480000,mq:120,locali:4,tipo:'Appartamento',status:'Disponibile',spese:80,features:{giardino:false,garage:true,ascensore:true,mansarda:false,terrazza:true,cantina:true,piscina:false,portineria:false},note:'',photos:[],createdAt:Date.now()-200000},
+  {id:2,address:'Via XX Settembre 5, Verona',zona:'Centro Storico',lat:45.4400,lng:10.9920,price:310000,mq:85,locali:3,tipo:'Appartamento',status:'In trattativa',spese:60,features:{giardino:false,garage:false,ascensore:true,mansarda:false,terrazza:false,cantina:false,piscina:false,portineria:true},note:'',photos:[],createdAt:Date.now()-100000},
+  {id:3,address:'Via San Zeno Maggiore 8, Verona',zona:'San Zeno',lat:45.4418,lng:10.9761,price:750000,mq:200,locali:6,tipo:'Villa',status:'Disponibile',spese:0,features:{giardino:true,garage:true,ascensore:false,mansarda:true,terrazza:true,cantina:true,piscina:true,portineria:false},note:'',photos:[],createdAt:Date.now()-50000},
+  {id:4,address:'Via Golosine 21, Verona',zona:'Golosine',lat:45.4214,lng:11.0012,price:185000,mq:70,locali:2,tipo:'Appartamento',status:'Venduta',spese:40,features:{giardino:false,garage:true,ascensore:false,mansarda:false,terrazza:false,cantina:true,piscina:false,portineria:false},note:'',photos:[],createdAt:Date.now()-10000}
+];
+var props=[],reqs=[],nextId=10,editId=null,reqTab='attive',sortKey='date',sortDir='desc',modalPhotos=[];
+var cmpMaps={};
+
+function loadProps(){var d=localStorage.getItem('cm_props2');props=d?JSON.parse(d):JSON.parse(JSON.stringify(DP));}
+function saveProps(){localStorage.setItem('cm_props2',JSON.stringify(props));}
+
+function handlePhotoUpload(e){
+  var rem=3-modalPhotos.length;
+  if(rem<=0){alert('Massimo 3 foto.');return;}
+  var files=Array.prototype.slice.call(e.target.files,0,rem);
+  files.forEach(function(f){var r=new FileReader();r.onload=function(ev){modalPhotos.push(ev.target.result);renderPhotoPrev();};r.readAsDataURL(f);});
+  e.target.value='';
+}
+function renderPhotoPrev(){
+  document.getElementById('photo-previews').innerHTML=modalPhotos.map(function(s,i){return '<div class="photo-thumb"><img src="'+s+'"><button class="photo-thumb-del" onclick="removePhoto('+i+')">x</button></div>';}).join('');
+  document.getElementById('photo-upload-area').style.display=modalPhotos.length>=3?'none':'block';
+}
+function removePhoto(i){modalPhotos.splice(i,1);renderPhotoPrev();}
+
+function setSort(k,btn){sortKey=k;document.querySelectorAll('.sort-btn').forEach(function(b){b.classList.remove('active');});btn.classList.add('active');renderProperties();}
+function toggleSortDir(){sortDir=sortDir==='desc'?'asc':'desc';document.getElementById('sort-dir-btn').innerHTML=sortDir==='desc'?'&#8595;':'&#8593;';renderProperties();}
+function getFiltered(){
+  var list=props.slice();
+  var tipo=document.getElementById('f-tipo').value;
+  var zona=document.getElementById('f-zona').value;
+  var status=document.getElementById('f-status').value;
+  var pm=parseInt(document.getElementById('f-price-max').value)||Infinity;
+  if(tipo)list=list.filter(function(p){return p.tipo===tipo;});
+  if(zona)list=list.filter(function(p){return p.zona===zona;});
+  if(status)list=list.filter(function(p){return p.status===status;});
+  if(pm!==Infinity)list=list.filter(function(p){return p.price<=pm;});
+  list.sort(function(a,b){var va=sortKey==='price'?a.price:(a.createdAt||0);var vb=sortKey==='price'?b.price:(b.createdAt||0);return sortDir==='desc'?vb-va:va-vb;});
+  return list;
+}
+
+function renderProperties(){
+  var list=getFiltered();
+  document.getElementById('filter-count').textContent=list.length<props.length?(list.length+' di '+props.length+' immobili'):(props.length+' immobili');
+  var SC={Disponibile:'status-disponibile','In trattativa':'status-trattativa',Venduta:'status-venduta'};
+  if(list.length===0){document.getElementById('prop-grid').innerHTML='<div style="font-size:13px;color:var(--tx2);padding:20px 0;">Nessun immobile corrisponde ai filtri.</div>';return;}
+  document.getElementById('prop-grid').innerHTML=list.map(function(p){
+    var yf=Object.keys(p.features).filter(function(k){return p.features[k];});
+    var nf=Object.keys(p.features).filter(function(k){return !p.features[k];}).slice(0,2);
+    var ph=p.photos||[];
+    var img=ph.length>0?('<div class="prop-card-img-gallery"><img src="'+ph[0]+'" alt="">'+(ph.length>1?'<span class="photo-count-badge">'+ph.length+' foto</span>':'')+'</div>'):'<div class="prop-card-img-placeholder">&#127968;</div>';
+    var spese=p.spese?(' &middot; spese &euro;'+p.spese+'/mese'):'';
+    return '<div class="prop-card" onclick="openEditModal('+p.id+')">'
+      +img+'<div class="prop-card-body">'
+      +'<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:8px;">'
+      +'<div class="prop-price">&euro; '+p.price.toLocaleString('it-IT')+'</div>'
+      +'<div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;">'
+      +'<span class="prop-type-badge">'+p.tipo+'</span>'
+      +'<span class="status-badge '+(SC[p.status]||'status-disponibile')+'">'+p.status+'</span>'
+      +'</div></div>'
+      +'<div class="prop-address">'+p.address+'</div>'
+      +'<div style="font-size:12px;color:var(--tx2);margin-bottom:4px;">'+p.zona+' &middot; '+p.mq+' mq &middot; '+p.locali+' locali'+(p.piano?' &middot; Piano '+p.piano:'')+spese+'</div>'
+      +(p.note?'<div style="font-size:11px;color:var(--tx2);margin-bottom:4px;font-style:italic;line-height:1.4;">'+p.note+'</div>':'')
+      +'<div class="prop-features">'
+      +yf.map(function(f){return '<span class="feat-tag yes">'+f+'</span>';}).join('')
+      +nf.map(function(f){return '<span class="feat-tag no">'+f+'</span>';}).join('')
+      +'</div></div></div>';
+  }).join('');
+}
+
+function scoreProperty(p,req){
+  var det=[],sc=0,mx=0;
+  mx+=25;var ps=p.price<=req.budget?25:(p.price<=req.budget*1.1?12:0);sc+=ps;
+  det.push({label:'Prezzo',pts:ps,maxPts:25,ok:ps>=25,partial:ps>0&&ps<25,note:'euro '+p.price.toLocaleString('it-IT')+' / budget euro '+parseInt(req.budget).toLocaleString('it-IT')});
+  mx+=30;
+  var ctr=reqCenter(req);
+  var dist=hav(p.lat,p.lng,ctr[0],ctr[1]);
+  var rag=parseFloat(req.raggio)||2;
+  var ds=dist<=rag?30:(dist<=rag*1.5?18:(dist<=rag*2.5?8:0));sc+=ds;
+  det.push({label:'Distanza',pts:ds,maxPts:30,ok:ds>=30,partial:ds>0&&ds<30,note:dist.toFixed(1)+' km / raggio '+rag+' km',propLat:p.lat,propLng:p.lng,ctr:ctr,rag:rag,dist:dist});
+  mx+=15;var ms=p.mq>=req.mq?15:(p.mq>=req.mq*0.85?7:0);sc+=ms;
+  det.push({label:'Superficie',pts:ms,maxPts:15,ok:ms>=15,partial:ms>0&&ms<15,note:p.mq+' mq / richiesti '+req.mq+' mq'});
+  mx+=10;var ts=(!req.tipo||p.tipo===req.tipo)?10:0;sc+=ts;
+  det.push({label:'Tipologia',pts:ts,maxPts:10,ok:ts===10,partial:false,note:p.tipo+(req.tipo?' / richiesta '+req.tipo:'')});
+  mx+=10;var ls=p.locali>=req.locali?10:0;sc+=ls;
+  det.push({label:'Locali',pts:ls,maxPts:10,ok:ls===10,partial:false,note:p.locali+' / richiesti '+req.locali});
+  var feats=req.features||{};
+  var wf=Object.keys(feats).filter(function(k){return feats[k];});
+  if(wf.length>0){
+    mx+=10;
+    var mf=wf.filter(function(f){return p.features[f];});
+    var nf2=wf.filter(function(f){return !p.features[f];});
+    var fs=Math.round(10*mf.length/wf.length);sc+=fs;
+    det.push({label:'Caratteristiche',pts:fs,maxPts:10,ok:mf.length===wf.length,partial:mf.length>0&&mf.length<wf.length,matchedFeats:mf,missedFeats:nf2});
+  }
+  return {pct:Math.round((sc/mx)*100),dist:dist.toFixed(1),det:det};
+}
+
+function compareRequest(id){
+  var req=null;for(var i=0;i<reqs.length;i++){if(reqs[i].id===id){req=reqs[i];break;}}
+  if(!req)return;
+  var wrap=document.getElementById('cmp-'+id);
+  if(wrap.style.display==='block'){closeCompare(id);return;}
+  document.querySelectorAll('.inline-compare').forEach(function(el){el.style.display='none';});
+  document.querySelectorAll('.compare-btn').forEach(function(b){b.textContent='Compara immobili';});
+  if(req.is_new){sbUpdate('requests',id,{is_new:false}).catch(function(){});req.is_new=false;updateBadge();renderRequests();}
+  var avail=props.filter(function(p){return (p.status||'Disponibile')!=='Venduta';});
+  var scored=avail.map(function(p){var s=scoreProperty(p,req);return Object.assign({},p,s);});
+  scored.sort(function(a,b){return b.pct-a.pct;});
+  scored=scored.filter(function(p){return p.pct>=40;});
+  wrap._scored=scored;
+  wrap._req=req;
+  var html='<div class="inline-compare-header"><span class="inline-compare-title">Ranking &mdash; '+(req.via||'area su mappa')+' &middot; raggio '+req.raggio+' km &middot; solo disponibili</span>'
+    +'<button class="close-compare-btn" onclick="closeCompare(\''+id+'\')">&#10005; Chiudi</button></div>';
+  if(scored.length===0){html+='<div style="font-size:13px;color:var(--tx2);">Nessun immobile disponibile.</div>';}
+  else{
+    for(var j=0;j<scored.length;j++){
+      var p=scored[j];
+      var col=p.pct>=70?'var(--tx-success)':(p.pct>=45?'#BA7517':'var(--tx-danger)');
+      var bar=j===0?'#BA7517':'#185FA5';
+      var inRng=parseFloat(p.dist)<=parseFloat(req.raggio);
+      html+='<div class="rank-item">'
+        +'<div class="rank-num rank-'+(Math.min(j+1,3))+'-n">'+(j+1)+'</div>'
+        +'<div class="rank-info"><div class="rank-address">'+p.address+'</div>'
+        +'<div class="rank-sub">&euro; '+p.price.toLocaleString('it-IT')+' &middot; '+p.mq+' mq &middot; '+p.tipo
+        +' &middot; <span style="color:'+(inRng?'var(--tx-success)':'var(--tx-danger)')+';">'+p.dist+' km</span></div></div>'
+        +'<div style="display:flex;flex-direction:column;align-items:flex-end;gap:4px;flex-shrink:0;">'
+        +'<span class="rank-pct" style="color:'+col+';" onclick="toggleBreakdown(\''+id+'\','+p.id+')" title="Clicca per dettaglio">'+p.pct+'%</span>'
+        +'<div style="width:80px;"><div style="height:5px;background:var(--bg2);border-radius:3px;overflow:hidden;"><div style="height:100%;width:'+p.pct+'%;background:'+bar+';border-radius:3px;"></div></div></div>'
+        +'</div></div>'
+        +'<div class="breakdown" id="bd-'+id+'-'+p.id+'"></div>';
+    }
+  }
+  wrap.innerHTML=html;
+  wrap.style.display='block';
+  var btn=document.getElementById('cmp-btn-'+id);
+  if(btn)btn.textContent='Chiudi comparazione';
+  wrap.scrollIntoView({behavior:'smooth',block:'nearest'});
+}
+function closeCompare(id){
+  var w=document.getElementById('cmp-'+id);if(w)w.style.display='none';
+  var b=document.getElementById('cmp-btn-'+id);if(b)b.textContent='Compara immobili';
+}
+
+function toggleBreakdown(reqId,propId){
+  var wrap=document.getElementById('cmp-'+reqId);
+  var p=null;for(var i=0;i<wrap._scored.length;i++){if(wrap._scored[i].id===propId){p=wrap._scored[i];break;}}
+  var bd=document.getElementById('bd-'+reqId+'-'+propId);
+  if(bd.classList.contains('open')){bd.classList.remove('open');return;}
+  document.querySelectorAll('.breakdown.open').forEach(function(b){b.classList.remove('open');});
+  var html='';
+  for(var j=0;j<p.det.length;j++){
+    var d=p.det[j];
+    var sc=d.ok?'bk-ok':(d.partial?'bk-partial':'bk-no');
+    var st=d.ok?'&#10003; OK':(d.partial?'~ Parziale':'&#10007; No');
+    var extra='';
+    if(d.matchedFeats||d.missedFeats){
+      extra='<div class="bk-feats">';
+      (d.matchedFeats||[]).forEach(function(f){extra+='<span class="bk-feat-ok">&#10003; '+f+'</span>';});
+      (d.missedFeats||[]).forEach(function(f){extra+='<span class="bk-feat-no">&#10007; '+f+'</span>';});
+      extra+='</div>';
+    }
+    var mapBtn='';
+    if(d.label==='Distanza'){
+      var mapId='bm-'+reqId+'-'+propId;
+      mapBtn='<button class="map-open-btn" onclick="toggleCmpMap(\''+reqId+'\','+propId+',\''+mapId+'\',event)">&#128205; Vedi su mappa</button>'
+            +'<div class="cmp-map-panel" id="'+mapId+'"></div>';
+    }
+    html+='<div class="bk-row"><div class="bk-row-top"><span class="bk-label">'+d.label+' <span class="bk-note">'+( d.note||'')+'</span></span><span class="bk-status '+sc+'">'+st+' <span style="font-size:11px;color:var(--tx2);">('+d.pts+'/'+d.maxPts+')</span></span></div>'+extra+mapBtn+'</div>';
+  }
+  bd.innerHTML=html;
+  bd.classList.add('open');
+}
+
+function toggleCmpMap(reqId,propId,mapId,e){
+  e.stopPropagation();
+  var panel=document.getElementById(mapId);
+  if(panel.classList.contains('open')){panel.classList.remove('open');return;}
+  panel.classList.add('open');
+  var mk=reqId+'-'+propId;
+  if(cmpMaps[mk]){setTimeout(function(){cmpMaps[mk].invalidateSize();},50);return;}
+  var wrap=document.getElementById('cmp-'+reqId);
+  var p=null;for(var i=0;i<wrap._scored.length;i++){if(wrap._scored[i].id===propId){p=wrap._scored[i];break;}}
+  var req=wrap._req;
+  var ctr=reqCenter(req);
+  var m=L.map(panel,{zoomControl:true,scrollWheelZoom:false}).setView(ctr,14);
+  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© OSM',maxZoom:19}).addTo(m);
+  var rag=(parseFloat(req.raggio)||2)*1000;
+  L.circle(ctr,{radius:rag,color:'#185FA5',fillColor:'#185FA5',fillOpacity:0.1,weight:2}).addTo(m);
+  var ai=L.divIcon({className:'',html:'<div style="background:#185FA5;color:white;border-radius:50%;width:22px;height:22px;display:flex;align-items:center;justify-content:center;font-size:12px;border:2px solid white;box-shadow:0 2px 6px rgba(0,0,0,.3);">A</div>',iconSize:[22,22],iconAnchor:[11,11]});
+  L.marker(ctr,{icon:ai}).addTo(m).bindPopup('Area: '+(req.via||'selezionata'));
+  var inRange=parseFloat(p.dist)<=parseFloat(req.raggio);
+  var hc=inRange?'#3B6D11':'#A32D2D';
+  var hi=L.divIcon({className:'',html:'<div style="background:'+hc+';color:white;border-radius:50%;width:26px;height:26px;display:flex;align-items:center;justify-content:center;font-size:13px;border:2px solid white;box-shadow:0 2px 8px rgba(0,0,0,.3);">H</div>',iconSize:[26,26],iconAnchor:[13,13]});
+  L.marker([p.lat,p.lng],{icon:hi}).addTo(m).bindPopup(p.address+'<br>'+p.dist+' km dall\'area').openPopup();
+  L.polyline([ctr,[p.lat,p.lng]],{color:hc,weight:2,dashArray:'6,4'}).addTo(m);
+  m.fitBounds(L.latLngBounds([ctr,[p.lat,p.lng]]),{padding:[30,30]});
+  panel.addEventListener('click',function(ev){ev.stopPropagation();});
+  cmpMaps[mk]=m;
+}
+
+function fetchRequests(){
+  setStatus('loading');
+  sbSelect('requests').then(function(data){reqs=data;updateBadge();renderRequests();setStatus('ok');}).catch(function(){setStatus('err');});
+}
+function setStatus(s){
+  var dot=document.getElementById('status-dot'),txt=document.getElementById('status-txt');
+  if(s==='ok'){dot.className='status-dot dot-live';txt.textContent='Connesso';}
+  else if(s==='err'){dot.className='status-dot dot-err';txt.textContent='Errore';}
+  else{dot.className='status-dot';txt.textContent='Aggiornamento...';}
+}
+function updateBadge(){
+  var n=reqs.filter(function(r){return r.is_new&&!r.archived;}).length;
+  var b=document.getElementById('badge-count');
+  b.textContent=n;b.style.display=n>0?'':'none';
+  document.title=n>0?'('+n+') CasaManager':'CasaManager';
+}
+function switchReqTab(tab,btn){
+  reqTab=tab;
+  document.querySelectorAll('.req-tab').forEach(function(t){t.classList.remove('active');});
+  btn.classList.add('active');
+  document.querySelectorAll('.inline-compare').forEach(function(el){el.style.display='none';});
+  renderRequests();
+}
+function archiveRequest(id){
+  var r=null;for(var i=0;i<reqs.length;i++){if(reqs[i].id===id){r=reqs[i];break;}}
+  if(!r)return;
+  var nv=!r.archived;
+  sbUpdate('requests',id,{archived:nv,is_new:false}).then(function(){r.archived=nv;r.is_new=false;updateBadge();renderRequests();}).catch(function(e){alert('Errore: '+e.message);});
+}
+function deleteRequest(id){
+  if(!confirm('Eliminare questa richiesta?'))return;
+  sbDelete('requests',id).then(function(){reqs=reqs.filter(function(r){return r.id!==id;});updateBadge();renderRequests();}).catch(function(e){alert('Errore: '+e.message);});
+}
+function toggleContacted(id){
+  var r=null;for(var i=0;i<reqs.length;i++){if(reqs[i].id===id){r=reqs[i];break;}}
+  if(!r)return;
+  var nv=!r.contacted;
+  var ca=nv?new Date().toLocaleDateString('it-IT',{day:'numeric',month:'short',year:'numeric'}):null;
+  sbUpdate('requests',id,{contacted:nv,contacted_at:ca}).then(function(){r.contacted=nv;r.contacted_at=ca;renderRequests();}).catch(function(e){alert('Errore: '+e.message);});
+}
+function renderRequests(){cmpMaps={};// reset mappe quando si ri-renderizza
+
+  var list=reqTab==='attive'?reqs.filter(function(r){return !r.archived;}):reqs.filter(function(r){return r.archived;});
+  var cA=reqs.filter(function(r){return !r.archived;}).length;
+  var cB=reqs.filter(function(r){return r.archived;}).length;
+  document.getElementById('cnt-attive').textContent=cA>0?'('+cA+')':'';
+  document.getElementById('cnt-arch').textContent=cB>0?'('+cB+')':'';
+  if(list.length===0){
+    document.getElementById('req-list').innerHTML='<div style="font-size:13px;color:var(--tx2);padding:24px 0;text-align:center;">'+(reqTab==='attive'?'Nessuna richiesta attiva.':'Nessuna richiesta archiviata.')+'</div>';
+    return;
+  }
+  var html='';
+  for(var i=0;i<list.length;i++){
+    var r=list[i];
+    var fl=[];
+    var feats=r.features||{};
+    for(var fk in feats){if(feats[fk])fl.push(fk);}
+    var featsLabel=fl.length>0?fl.join(', '):'nessuna';
+    var pills='';
+    if(r.ha_immobile_da_vendere==='si')pills+='<span class="req-pill pill-warn">&#127968; Ha immobile da vendere</span>';
+    else if(r.ha_immobile_da_vendere==='no')pills+='<span class="req-pill pill-muted">Nessun immobile da vendere</span>';
+    if(r.necessita_mutuo==='si')pills+='<span class="req-pill pill-info">&#127968; Necessita mutuo</span>';
+    else if(r.necessita_mutuo==='no')pills+='<span class="req-pill pill-muted">Acquisto senza mutuo</span>';
+    html+='<div class="req-card'+(r.is_new&&!r.archived?' isnew':'')+(r.archived?' archived':'')+(r.contacted?' contacted-card':'')
+      +'"><div class="req-header"><div style="display:flex;align-items:center;gap:8px;flex-wrap:wrap;">'
+      +'<span class="req-name">'+r.name+'</span>'
+      +(r.is_new&&!r.archived?'<span class="new-pill">Nuova</span>':'')
+      +(r.contacted?'<span class="contacted-pill">&#10003; Contattato'+(r.contacted_at?' &middot; '+r.contacted_at:'')+'</span>':'')
+      +(r.archived?'<span style="font-size:11px;background:var(--bg2);color:var(--tx2);padding:2px 8px;border-radius:20px;">Archiviata</span>':'')
+      +'</div><span class="req-date">'+r.date+'</span></div>'
+      +'<div class="req-details">'
+      +(r.tipo||'Qualsiasi tipo')+' &middot; <span class="geo-badge">&#128205; '+(r.via||'area su mappa')+' ('+r.raggio+' km)</span>'
+      +' &middot; fino a &euro; '+parseInt(r.budget).toLocaleString('it-IT')+' &middot; min '+r.mq+' mq &middot; '+r.locali+'+ locali<br>'
+      +'Caratteristiche: '+featsLabel+(r.note?'<br><em>Note: '+r.note+'</em>':'')
+      +'<br><span style="font-size:11px;">'+r.email+(r.tel?' &middot; '+r.tel:'')+'</span>'
+      +(pills?'<div class="req-info-pills">'+pills+'</div>':'')
+      +'</div>'
+      +'<div class="req-actions">'
+      +(!r.archived?'<button class="compare-btn" id="cmp-btn-'+r.id+'" onclick="compareRequest(\''+r.id+'\')">Compara immobili</button>':'')
+      +'<button class="btn-sm'+(r.contacted?' contacted':'')+'" onclick="toggleContacted(\''+r.id+'\')">'+(r.contacted?'&#10003; Contattato':'Segna contattato')+'</button>'
+      +'<button class="btn-sm" onclick="archiveRequest(\''+r.id+'\')">'+(r.archived?'Riattiva':'Archivia')+'</button>'
+      +'<button class="btn-sm danger" onclick="deleteRequest(\''+r.id+'\')">Elimina</button>'
+      +'</div>'
+      +'<div class="inline-compare" id="cmp-'+r.id+'" style="display:none;"></div>'
+      +'</div>';
+  }
+  document.getElementById('req-list').innerHTML=html;
+}
+
+function switchTab(tab,btn){
+  document.querySelectorAll('.nav-tab').forEach(function(t){t.classList.remove('active');});
+  document.querySelectorAll('.section').forEach(function(s){s.classList.remove('active');});
+  btn.classList.add('active');document.getElementById('sec-'+tab).classList.add('active');
+  if(tab==='richieste')fetchRequests();
+}
+function toggleFeat(btn){btn.classList.toggle('on');}
+function copyLink(){
+  navigator.clipboard.writeText('https://tommaso0705.github.io/Casamanager/form.html').then(function(){
+    var b=document.getElementById('copy-btn');b.textContent='Copiato!';b.classList.add('copied');
+    setTimeout(function(){b.textContent='Copia link';b.classList.remove('copied');},2000);
+  });
+}
+
+function openAddModal(){
+  editId=null;modalPhotos=[];
+  document.getElementById('modal-title').textContent='Aggiungi immobile';
+  ['m-address','m-price','m-mq','m-locali','m-note','m-spese'].forEach(function(id){document.getElementById(id).value='';});document.getElementById('m-piano').value='';
+  document.getElementById('m-lat').value='45.4384';document.getElementById('m-lng').value='10.9916';
+  document.getElementById('m-tipo').value='Appartamento';document.getElementById('m-zona').value='Centro Storico';
+  document.getElementById('m-zona-altro').style.display='none';document.getElementById('m-zona-altro').value='';
+  document.getElementById('m-status').value='Disponibile';
+  document.querySelectorAll('#modal-feats .toggle-btn').forEach(function(b){b.classList.remove('on');});
+  document.getElementById('delete-btn').style.display='none';document.getElementById('geo-badge').style.display='none';
+  renderPhotoPrev();document.getElementById('modal').style.display='flex';
+}
+function openEditModal(id){
+  editId=id;var p=null;for(var i=0;i<props.length;i++){if(props[i].id===id){p=props[i];break;}}if(!p)return;
+  modalPhotos=(p.photos||[]).slice();
+  document.getElementById('modal-title').textContent='Modifica immobile';
+  document.getElementById('m-address').value=p.address;document.getElementById('m-price').value=p.price;
+  document.getElementById('m-mq').value=p.mq;document.getElementById('m-locali').value=p.locali;
+  document.getElementById('m-lat').value=p.lat;document.getElementById('m-lng').value=p.lng;
+  document.getElementById('m-tipo').value=p.tipo;document.getElementById('m-status').value=p.status||'Disponibile';
+  document.getElementById('m-note').value=p.note||'';document.getElementById('m-spese').value=p.spese||'';document.getElementById('m-piano').value=p.piano||'';
+  var kz=['Centro Storico','Veronetta','Borgo Trento','Porta Palio','Golosine','San Zeno','Quinzano','Avesa','Parona','Pescantina'];
+  var ze=document.getElementById('m-zona'),za=document.getElementById('m-zona-altro');
+  if(kz.indexOf(p.zona)>=0){ze.value=p.zona;za.style.display='none';}else{ze.value='altro';za.value=p.zona;za.style.display='block';}
+  document.querySelectorAll('#modal-feats .toggle-btn').forEach(function(b){b.classList.toggle('on',!!p.features[b.dataset.key]);});
+  document.getElementById('delete-btn').style.display='';document.getElementById('geo-badge').style.display='none';
+  renderPhotoPrev();document.getElementById('modal').style.display='flex';
+}
+function closeModal(){document.getElementById('modal').style.display='none';}
+function toggleAltroZona(sel){var i=document.getElementById('m-zona-altro');i.style.display=sel.value==='altro'?'block':'none';if(sel.value==='altro')i.focus();}
+function getZona(){var s=document.getElementById('m-zona');if(s.value==='altro'){var v=document.getElementById('m-zona-altro').value.trim();return v||'Altro';}return s.value;}
+function saveProperty(){
+  var features={};
+  document.querySelectorAll('#modal-feats .toggle-btn').forEach(function(b){features[b.dataset.key]=b.classList.contains('on');});
+  var zona=getZona();
+  var old=null;for(var i=0;i<props.length;i++){if(props[i].id===editId){old=props[i];break;}}
+  var p={id:editId||nextId++,address:document.getElementById('m-address').value||'Indirizzo non specificato',zona:zona,
+    lat:parseFloat(document.getElementById('m-lat').value)||(ZC[zona]||VC)[0],
+    lng:parseFloat(document.getElementById('m-lng').value)||(ZC[zona]||VC)[1],
+    price:parseInt(document.getElementById('m-price').value)||0,mq:parseInt(document.getElementById('m-mq').value)||0,
+    locali:parseInt(document.getElementById('m-locali').value)||1,tipo:document.getElementById('m-tipo').value,
+    status:document.getElementById('m-status').value,piano:document.getElementById('m-piano').value||'',spese:parseInt(document.getElementById('m-spese').value)||0,
+    features:features,note:document.getElementById('m-note').value.trim(),photos:modalPhotos,
+    createdAt:old?old.createdAt:Date.now()};
+  if(editId){for(var j=0;j<props.length;j++){if(props[j].id===editId){props[j]=p;break;}}}else props.push(p);
+  saveProps();closeModal();renderProperties();
+}
+function deleteProperty(){
+  if(!editId||!confirm('Eliminare questo immobile?'))return;
+  props=props.filter(function(p){return p.id!==editId;});
+  saveProps();closeModal();renderProperties();
+}
+
+var acTimer=null,acIdx=-1,acRes=[];
+function titleCase(s){return s.replace(/\b\w/g,function(c){return c.toUpperCase();});}
+function onAddressInput(val){
+  clearTimeout(acTimer);document.getElementById('geo-badge').style.display='none';
+  if(val.length<3){closeAc();return;}
+  acTimer=setTimeout(function(){fetchAc(val);},350);
+}
+function fetchAc(q){
+  var list=document.getElementById('ac-list');list.style.display='block';list.innerHTML='<div class="ac-loading">Ricerca in corso...</div>';
+  var qn=titleCase(q);
+  var url='https://nominatim.openstreetmap.org/search?format=json&addressdetails=1&limit=8&countrycodes=it&q='+encodeURIComponent(qn+', Verona');
+  fetch(url,{headers:{'Accept-Language':'it'}}).then(function(r){return r.json();}).then(function(data){
+    acRes=data;acIdx=-1;
+    if(!data.length){list.innerHTML='<div class="ac-loading">Nessun risultato trovato</div>';return;}
+    list.innerHTML=data.map(function(r,i){
+      var main=r.display_name.split(',')[0];
+      var sub=r.display_name.split(',').slice(1,3).join(',').trim();
+      return '<div class="ac-item" onmousedown="selectAc('+i+')">'+main+'<small>'+sub+'</small></div>';
+    }).join('');
+  }).catch(function(){list.innerHTML='<div class="ac-loading">Errore di rete</div>';});
+}
+function onAddressKey(e){
+  var items=document.querySelectorAll('.ac-item');
+  if(e.key==='ArrowDown'){e.preventDefault();acIdx=Math.min(acIdx+1,items.length-1);hlAc(items);}
+  else if(e.key==='ArrowUp'){e.preventDefault();acIdx=Math.max(acIdx-1,0);hlAc(items);}
+  else if(e.key==='Enter'&&acIdx>=0){e.preventDefault();selectAc(acIdx);}
+  else if(e.key==='Escape')closeAc();
+}
+function hlAc(items){items.forEach(function(it,i){it.classList.toggle('active',i===acIdx);});if(items[acIdx])items[acIdx].scrollIntoView({block:'nearest'});}
+function selectAc(i){
+  var r=acRes[i];if(!r)return;
+  document.getElementById('m-address').value=r.display_name.split(',').slice(0,2).join(',').trim();
+  document.getElementById('m-lat').value=parseFloat(r.lat).toFixed(6);document.getElementById('m-lng').value=parseFloat(r.lon).toFixed(6);
+  var a=r.address||{};var q=a.quarter||a.suburb||a.neighbourhood||a.city_district||'';
+  var kz=['Centro Storico','Veronetta','Borgo Trento','Porta Palio','Golosine','San Zeno','Quinzano','Avesa','Parona','Pescantina'];
+  var matched='';
+  for(var j=0;j<kz.length;j++){if(q.toLowerCase().indexOf(kz[j].toLowerCase())>=0||kz[j].toLowerCase().indexOf(q.toLowerCase())>=0){matched=kz[j];break;}}
+  var ze=document.getElementById('m-zona'),za=document.getElementById('m-zona-altro');
+  if(matched){ze.value=matched;za.style.display='none';}else if(q){ze.value='altro';za.value=q;za.style.display='block';}
+  document.getElementById('geo-badge').style.display='block';closeAc();
+}
+function closeAc(){var l=document.getElementById('ac-list');l.style.display='none';l.innerHTML='';acRes=[];acIdx=-1;}
+document.addEventListener('click',function(e){if(!e.target.closest('.ac-wrap'))closeAc();});
+
+loadProps();renderProperties();
+setInterval(function(){
+  sbSelect('requests').then(function(data){
+    var prev=reqs.filter(function(r){return r.is_new&&!r.archived;}).length;
+    reqs=data;var curr=reqs.filter(function(r){return r.is_new&&!r.archived;}).length;
+    updateBadge();
+    if(curr>prev&&Notification.permission==='granted')new Notification('CasaManager',{body:'Nuova richiesta cliente!'});
+    if(document.getElementById('sec-richieste').classList.contains('active'))renderRequests();
+  }).catch(function(){});
+},30000);
+if('Notification'in window&&Notification.permission==='default')Notification.requestPermission();
+</script>
+</body>
+</html>
